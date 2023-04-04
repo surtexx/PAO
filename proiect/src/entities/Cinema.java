@@ -81,9 +81,9 @@ public class Cinema {
     public void setPrices(HashMap<Movie, Integer> prices) {
         for(Movie m: prices.keySet())
             if(prices.get(m) < 0)
-                throw new IllegalArgumentException("Price must be positive");
+                throw new IllegalArgumentException("ERROR: Price must be positive");
             else if(Arrays.asList(this.listed_movies).contains(m))
-                throw new IllegalArgumentException("Movie not in the list of streaming movies");
+                throw new IllegalArgumentException("ERROR: Movie not in the list of streaming movies");
         this.prices = prices;
     }
 
@@ -94,9 +94,9 @@ public class Cinema {
     public void setStreaming_dates(HashMap<Movie, LocalDateTime> streaming_dates) {
         for(Movie m: streaming_dates.keySet()){
             if(streaming_dates.get(m).isBefore(LocalDateTime.now()))
-                throw new IllegalArgumentException("Date must be in the future");
+                throw new IllegalArgumentException("ERROR: Date must be in the future");
             else if(Arrays.asList(this.listed_movies).contains(m))
-                throw new IllegalArgumentException("Movie not in the list of streaming movies");
+                throw new IllegalArgumentException("ERROR: Movie not in the list of streaming movies");
             this.streaming_dates.put(m, streaming_dates.get(m));
         }
     }
@@ -108,9 +108,9 @@ public class Cinema {
     public void setRoom_numbers(HashMap<Movie, Integer> room_numbers) {
         for(Movie m: room_numbers.keySet()){
             if(room_numbers.get(m) < 0 || room_numbers.get(m) > this.nr_rooms)
-                throw new IllegalArgumentException("Room number must be between 1 and the number of rooms");
+                throw new IllegalArgumentException("ERROR: Room number must be between 1 and the number of rooms");
             else if(Arrays.asList(this.listed_movies).contains(m))
-                throw new IllegalArgumentException("Movie not in the list of streaming movies");
+                throw new IllegalArgumentException("ERROR: Movie not in the list of streaming movies");
         }
         this.room_numbers = room_numbers;
     }
@@ -122,9 +122,9 @@ public class Cinema {
     public void setSeats_available(HashMap<Movie, Integer> seats_available) {
         for(Movie m: seats_available.keySet()){
             if(seats_available.get(m) < 0 || seats_available.get(m) > this.nr_seats[this.room_numbers.get(m)])
-                throw new IllegalArgumentException("Number of seats available must be between 0 and the number of seats in the room");
+                throw new IllegalArgumentException("ERROR: Number of seats available must be between 0 and the number of seats in the room");
             else if(Arrays.asList(this.listed_movies).contains(m))
-                throw new IllegalArgumentException("Movie not in the list of streaming movies");
+                throw new IllegalArgumentException("ERROR: Movie not in the list of streaming movies");
         }
         this.seats_available = seats_available;
     }

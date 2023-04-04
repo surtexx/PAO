@@ -83,6 +83,7 @@ public class Service {
             }
             catch (Exception e){
                 System.out.println("Invalid choice");
+                scanner.nextLine();
                 return;
             }
             switch (choice) {
@@ -115,6 +116,7 @@ public class Service {
                     }
                     catch (Exception e){
                         System.out.println("Invalid choice");
+                        scanner.nextLine();
                         break;
                     }
                     while (choice_cinema < 1 || choice_cinema > all_cinemas.length) {
@@ -140,6 +142,7 @@ public class Service {
                     }
                     catch (Exception e){
                         System.out.println("Invalid choice");
+                        scanner.nextLine();
                         break;
                     }
                     while (choice_cinema2 < 1 || choice_cinema2 > all_cinemas2.length) {
@@ -168,8 +171,8 @@ public class Service {
                     if (streaming_movies_by_genre == null)
                         System.out.println("No movies found!");
                     else
-                    for (Movie m : streaming_movies_by_genre)
-                        System.out.println("---- " + m.getTitle() + " ----");
+                        for (Movie m : streaming_movies_by_genre)
+                            System.out.println("---- " + m.getTitle() + " ----");
                 }
                 case 8 -> {
                     Cinema[] all_cinemas3 = customerService.getAllCinemas();
@@ -185,6 +188,7 @@ public class Service {
                     }
                     catch (Exception e){
                         System.out.println("Invalid choice");
+                        scanner.nextLine();
                         break;
                     }
                     while (choice_cinema3 < 1 || choice_cinema3 > all_cinemas3.length) {
@@ -215,6 +219,7 @@ public class Service {
                     }
                     catch (Exception e){
                         System.out.println("Invalid choice");
+                        scanner.nextLine();
                         break;
                     }
                     while (choice_cinema4 < 1 || choice_cinema4 > all_cinemas4.length) {
@@ -293,6 +298,7 @@ public class Service {
                     }
                     catch (Exception e){
                         System.out.println("Invalid choice");
+                        scanner.nextLine();
                         break;
                     }
                     while (choice_movie < 1 || choice_movie > all_movies.length) {
@@ -316,6 +322,8 @@ public class Service {
                     }
                     catch (Exception e){
                         System.out.println("Invalid choice");
+                        scanner.nextLine();
+                        scanner.nextLine();
                         break;
                     }
                     Movie[] all_movies6 = customerService.getStreamingMoviesFromCinema(all_cinemas5[choice_cinema5 - 1]);
@@ -340,7 +348,7 @@ public class Service {
                         choice_movie5 = scanner.nextInt();
                     }
                     catch (Exception e){
-                        System.out.println("Invalid choice");
+                        scanner.nextLine();
                         break;
                     }
                     while (choice_movie5 < 1 || choice_movie5 > all_movies5.length) {
@@ -351,7 +359,6 @@ public class Service {
                     customerService.buyTicket(c5, m5);
                 }
                 case 16 -> {
-                    scanner.close();
                     System.exit(0);
                 }
                 default -> System.out.println("Invalid choice!");
@@ -364,10 +371,16 @@ public class Service {
             }
             catch (Exception e){
                 System.out.println("Invalid choice");
+                scanner.nextLine();
                 return;
             }
             switch (choice) {
                 case 1 -> {
+                    Cinema[] cinemas = cinemaService.getCinemas();
+                    for (Cinema c : cinemas)
+                        System.out.println("---- " + c.getName() + " ----");
+                }
+                case 2 -> {
                     System.out.println("Write cinema's name: ");
                     scanner.nextLine();
                     String name = scanner.nextLine();
@@ -380,7 +393,6 @@ public class Service {
                         scanner.nextLine();
                         String movie_title = scanner.nextLine();
                         System.out.println("    Write the movie director's name: ");
-                        scanner.nextLine();
                         String director_name = scanner.nextLine();
                         System.out.println("    Write the year the movie got released: ");
                         int year = scanner.nextInt();
@@ -422,7 +434,8 @@ public class Service {
                         switch (line.toLowerCase()) {
                             case "action" -> {
                                 System.out.println("    Write the movie's PEGI rating: ");
-                                int pegi = scanner.nextInt();
+                                int pegi;
+                                pegi = scanner.nextInt();
                                 boolean ok = false;
                                 while (!ok) {
                                     try {
@@ -431,6 +444,8 @@ public class Service {
                                     } catch (IllegalArgumentException e) {
                                         System.out.println(e.getMessage());
                                         System.out.println("    Try again: ");
+                                        scanner.nextLine();
+                                        pegi = scanner.nextInt();
                                     }
                                 }
                             }
@@ -469,7 +484,7 @@ public class Service {
                             }
                             case "thriller" -> {
                                 System.out.println("    Write all the subgenres of the movie (separated by a comma): ");
-                                line = scanner.next();
+                                line = scanner.nextLine();
                                 String[] subgenres = line.split(",");
                                 System.out.println("    Write the movie's PEGI rating: ");
                                 int pegi1 = scanner.nextInt();
@@ -481,6 +496,8 @@ public class Service {
                                     } catch (IllegalArgumentException e) {
                                         System.out.println(e.getMessage());
                                         System.out.println("    Try again: ");
+                                        scanner.nextLine();
+                                        pegi1 = scanner.nextInt();
                                     }
                                 }
                             }
@@ -498,6 +515,8 @@ public class Service {
                                     } catch (IllegalArgumentException e) {
                                         System.out.println(e.getMessage());
                                         System.out.println("    Try again: ");
+                                        scanner.nextLine();
+                                        pegi2 = scanner.nextInt();
                                     }
                                 }
                             }
@@ -516,7 +535,7 @@ public class Service {
                     Cinema c = new Cinema(name, movies1, rooms, seats);
                     cinemaService.addCinema(c);
                 }
-                case 2 -> {
+                case 3 -> {
                     Cinema[] all_cinemas = cinemaService.getCinemas();
                     int i = 1;
                     for (Cinema c1 : all_cinemas) {
@@ -529,6 +548,7 @@ public class Service {
                         choice_cinema = scanner.nextInt();
                     } catch (InputMismatchException e) {
                         System.out.println("Invalid choice");
+                        scanner.nextLine();
                         break;
                     }
                     while (choice_cinema < 1 || choice_cinema > all_cinemas.length) {
@@ -538,7 +558,7 @@ public class Service {
                     Cinema c1 = all_cinemas[choice_cinema - 1];
                     cinemaService.removeCinema(c1);
                 }
-                case 3 -> {
+                case 4 -> {
                     Cinema[] all_cinemas1 = cinemaService.getCinemas();
                     int i1 = 1;
                     for (Cinema c2 : all_cinemas1) {
@@ -551,6 +571,7 @@ public class Service {
                         choice_cinema1 = scanner.nextInt();
                     } catch (InputMismatchException e) {
                         System.out.println("Invalid choice");
+                        scanner.nextLine();
                         break;
                     }
                     while (choice_cinema1 < 1 || choice_cinema1 > all_cinemas1.length) {
@@ -563,7 +584,6 @@ public class Service {
                     scanner.nextLine();
                     String movie_title = scanner.nextLine();
                     System.out.println("Write the movie director's name: ");
-                    scanner.nextLine();
                     String director_name = scanner.nextLine();
                     System.out.println("Write the year the movie got released: ");
                     int year = scanner.nextInt();
@@ -614,6 +634,8 @@ public class Service {
                                 } catch (IllegalArgumentException e) {
                                     System.out.println(e.getMessage());
                                     System.out.println("    Try again: ");
+                                    scanner.nextLine();
+                                    pegi = scanner.nextInt();
                                 }
                             }
                         }
@@ -665,6 +687,8 @@ public class Service {
                                 } catch (IllegalArgumentException e) {
                                     System.out.println(e.getMessage());
                                     System.out.println("    Try again: ");
+                                    scanner.nextLine();
+                                    pegi1 = scanner.nextInt();
                                 }
                             }
                         }
@@ -683,6 +707,8 @@ public class Service {
                                 } catch (IllegalArgumentException e) {
                                     System.out.println(e.getMessage());
                                     System.out.println("    Try again: ");
+                                    scanner.nextLine();
+                                    pegi2 = scanner.nextInt();
                                 }
                             }
                         }
@@ -691,7 +717,7 @@ public class Service {
                     if (movie != null)
                         cinemaService.addMovie(c2, movie);
                 }
-                case 4 -> {
+                case 5 -> {
                     Cinema[] all_cinemas2 = cinemaService.getCinemas();
                     int i2 = 1;
                     for (Cinema c3 : all_cinemas2) {
@@ -700,12 +726,12 @@ public class Service {
                     }
                     System.out.println("Choose cinema: ");
                     int choice_cinema2;
-                    choice_cinema2 = scanner.nextInt();
                     try{
                         choice_cinema2 = scanner.nextInt();
                     }
                     catch (InputMismatchException e){
                         System.out.println("Invalid choice");
+                        scanner.nextLine();
                         break;
                     }
                     while (choice_cinema2 < 1 || choice_cinema2 > all_cinemas2.length) {
@@ -725,12 +751,12 @@ public class Service {
                     }
                     System.out.println("Choose movie: ");
                     int choice_movie;
-                    choice_movie = scanner.nextInt();
                     try{
                         choice_movie = scanner.nextInt();
                     }
                     catch (InputMismatchException e){
                         System.out.println("Invalid choice");
+                        scanner.nextLine();
                         break;
                     }
                     while (choice_movie < 1 || choice_movie > listed_movies.length) {
@@ -740,7 +766,7 @@ public class Service {
                     Movie m = listed_movies[choice_movie - 1];
                     cinemaService.removeMovie(c3, m);
                 }
-                case 5 -> {
+                case 6 -> {
                     Cinema[] all_cinemas3 = cinemaService.getCinemas();
                     int i3 = 1;
                     for (Cinema c4 : all_cinemas3) {
@@ -749,12 +775,12 @@ public class Service {
                     }
                     System.out.println("Choose cinema: ");
                     int choice_cinema3;
-                    choice_cinema3 = scanner.nextInt();
                     try{
                         choice_cinema3 = scanner.nextInt();
                     }
                     catch (InputMismatchException e){
                         System.out.println("Invalid choice");
+                        scanner.nextLine();
                         break;
                     }
                     while (choice_cinema3 < 1 || choice_cinema3 > all_cinemas3.length) {
@@ -774,12 +800,12 @@ public class Service {
                     }
                     System.out.println("Choose movie: ");
                     int choice_movie2;
-                    choice_movie2 = scanner.nextInt();
                     try{
                         choice_movie2 = scanner.nextInt();
                     }
                     catch (InputMismatchException e){
                         System.out.println("Invalid choice");
+                        scanner.nextLine();
                         break;
                     }
                     while (choice_movie2 < 1 || choice_movie2 > listed_movies2.length) {
@@ -806,9 +832,15 @@ public class Service {
                     int price = scanner.nextInt();
                     System.out.println("Write the room of the streaming: ");
                     int room = scanner.nextInt();
-                    cinemaService.streamMovie(c4, m2, date, room, price);
+                    try{
+                        cinemaService.streamMovie(c4, m2, date, room, price);
+                    }
+                    catch(IllegalArgumentException e){
+                        System.out.println(e.getMessage());
+                        scanner.nextLine();
+                    }
                 }
-                case 6 -> {
+                case 7 -> {
                     Cinema[] all_cinemas4 = cinemaService.getCinemas();
                     int i4 = 1;
                     for (Cinema c5 : all_cinemas4) {
@@ -817,12 +849,12 @@ public class Service {
                     }
                     System.out.println("Choose cinema: ");
                     int choice_cinema4;
-                    choice_cinema4 = scanner.nextInt();
                     try{
                         choice_cinema4 = scanner.nextInt();
                     }
                     catch (InputMismatchException e){
                         System.out.println("Invalid choice");
+                        scanner.nextLine();
                         break;
                     }
                     while (choice_cinema4 < 1 || choice_cinema4 > all_cinemas4.length) {
@@ -842,12 +874,12 @@ public class Service {
                     }
                     System.out.println("Choose movie: ");
                     int choice_movie3;
-                    choice_movie3 = scanner.nextInt();
                     try{
                         choice_movie3 = scanner.nextInt();
                     }
                     catch (InputMismatchException e){
                         System.out.println("Invalid choice");
+                        scanner.nextLine();
                         break;
                     }
                     while (choice_movie3 < 1 || choice_movie3 > streaming_movies.length) {
@@ -856,9 +888,15 @@ public class Service {
                     }
                     Movie m3 = streaming_movies[choice_movie3 - 1];
                     LocalDateTime date_to_stop = c5.getStreaming_dates().get(m3);
-                    cinemaService.stopStreaming(c5, m3, date_to_stop);
+                    try {
+                        cinemaService.stopStreaming(c5, m3, date_to_stop);
+                    }
+                    catch(IllegalArgumentException e){
+                        System.out.println(e.getMessage());
+                        scanner.nextLine();
+                    }
                 }
-                case 7 -> {
+                case 8 -> {
                     Cinema[] all_cinemas5 = cinemaService.getCinemas();
                     int i5 = 1;
                     for (Cinema c6 : all_cinemas5) {
@@ -867,12 +905,12 @@ public class Service {
                     }
                     System.out.println("Choose cinema: ");
                     int choice_cinema5;
-                    choice_cinema5 = scanner.nextInt();
                     try{
                         choice_cinema5 = scanner.nextInt();
                     }
                     catch (InputMismatchException e){
                         System.out.println("Invalid choice");
+                        scanner.nextLine();
                         break;
                     }
                     while (choice_cinema5 < 1 || choice_cinema5 > all_cinemas5.length) {
@@ -892,12 +930,12 @@ public class Service {
                     }
                     System.out.println("Choose movie: ");
                     int choice_movie4;
-                    choice_movie4 = scanner.nextInt();
                     try{
                         choice_movie4 = scanner.nextInt();
                     }
                     catch (InputMismatchException e){
                         System.out.println("Invalid choice");
+                        scanner.nextLine();
                         break;
                     }
                     while (choice_movie4 < 1 || choice_movie4 > streaming_movies2.length) {
@@ -907,9 +945,15 @@ public class Service {
                     Movie m4 = streaming_movies2[choice_movie4 - 1];
                     System.out.println("Write the new price of the streaming: ");
                     int new_price = scanner.nextInt();
-                    cinemaService.changePrice(c6, m4, new_price);
+                    try{
+                        cinemaService.changePrice(c6, m4, new_price);
+                    }
+                    catch(IllegalArgumentException e){
+                        System.out.println(e.getMessage());
+                        scanner.nextLine();
+                    }
                 }
-                case 8 -> {
+                case 9 -> {
                     Cinema[] all_cinemas6 = cinemaService.getCinemas();
                     int i6 = 1;
                     for (Cinema c7 : all_cinemas6) {
@@ -918,12 +962,12 @@ public class Service {
                     }
                     System.out.println("Choose cinema: ");
                     int choice_cinema6;
-                    choice_cinema6 = scanner.nextInt();
                     try{
                         choice_cinema6 = scanner.nextInt();
                     }
                     catch (InputMismatchException e){
                         System.out.println("Invalid choice");
+                        scanner.nextLine();
                         break;
                     }
                     while (choice_cinema6 < 1 || choice_cinema6 > all_cinemas6.length) {
@@ -943,12 +987,12 @@ public class Service {
                     }
                     System.out.println("Choose movie: ");
                     int choice_movie5;
-                    choice_movie5 = scanner.nextInt();
                     try{
                         choice_movie5 = scanner.nextInt();
                     }
                     catch (InputMismatchException e){
                         System.out.println("Invalid choice");
+                        scanner.nextLine();
                         break;
                     }
                     while (choice_movie5 < 1 || choice_movie5 > streaming_movies3.length) {
@@ -958,9 +1002,15 @@ public class Service {
                     Movie m5 = streaming_movies3[choice_movie5 - 1];
                     System.out.println("Write the new room of the streaming: ");
                     int new_room = scanner.nextInt();
-                    cinemaService.changeRoom(c7, m5, new_room);
+                    try{
+                        cinemaService.changeRoom(c7, m5, new_room);
+                    }
+                    catch(IllegalArgumentException e){
+                        System.out.println(e.getMessage());
+                        scanner.nextLine();
+                    }
                 }
-                case 9 -> {
+                case 10 -> {
                     Cinema[] all_cinemas7 = cinemaService.getCinemas();
                     int i7 = 1;
                     for (Cinema c8 : all_cinemas7) {
@@ -969,12 +1019,12 @@ public class Service {
                     }
                     System.out.println("Choose cinema: ");
                     int choice_cinema7;
-                    choice_cinema7 = scanner.nextInt();
                     try{
                         choice_cinema7 = scanner.nextInt();
                     }
                     catch (InputMismatchException e){
                         System.out.println("Invalid choice");
+                        scanner.nextLine();
                         break;
                     }
                     while (choice_cinema7 < 1 || choice_cinema7 > all_cinemas7.length) {
@@ -994,12 +1044,12 @@ public class Service {
                     }
                     System.out.println("Choose movie: ");
                     int choice_movie6;
-                    choice_movie6 = scanner.nextInt();
                     try{
                         choice_movie6 = scanner.nextInt();
                     }
                     catch (InputMismatchException e){
                         System.out.println("Invalid choice");
+                        scanner.nextLine();
                         break;
                     }
                     while (choice_movie6 < 1 || choice_movie6 > streaming_movies4.length) {
@@ -1022,10 +1072,15 @@ public class Service {
                         }
                     }
                     LocalDateTime date1 = LocalDateTime.parse(date_string1, formatter1);
-                    cinemaService.changeDate(c8, m6, date1);
+                    try{
+                        cinemaService.changeDate(c8, m6, date1);
+                    }
+                    catch(IllegalArgumentException e){
+                        System.out.println(e.getMessage());
+                        scanner.nextLine();
+                    }
                 }
-                case 10 -> {
-                    scanner.close();
+                case 11 -> {
                     System.exit(0);
                 }
                 default -> System.out.println("Invalid choice!");
@@ -1053,16 +1108,17 @@ public class Service {
             System.out.println("16. Exit");
         }
         else if(cinemaService != null){
-            System.out.println("1. Add a cinema");
-            System.out.println("2. Remove a cinema");
-            System.out.println("3. Add a movie");
-            System.out.println("4. Remove a movie");
-            System.out.println("5. Stream a movie");
-            System.out.println("6. Stop streaming a movie");
-            System.out.println("7. Change price of a movie");
-            System.out.println("8. Change room of a movie");
-            System.out.println("9. Change date of a movie");
-            System.out.println("10. Exit");
+            System.out.println("1. List all cinemas");
+            System.out.println("2. Add a cinema");
+            System.out.println("3. Remove a cinema");
+            System.out.println("4. Add a movie");
+            System.out.println("5. Remove a movie");
+            System.out.println("6. Stream a movie");
+            System.out.println("7. Stop streaming a movie");
+            System.out.println("8. Change price of a movie");
+            System.out.println("9. Change room of a movie");
+            System.out.println("10. Change date of a movie");
+            System.out.println("11. Exit");
         }
     }
 }
