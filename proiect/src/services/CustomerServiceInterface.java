@@ -4,7 +4,7 @@ import entities.Actor;
 import entities.Cinema;
 import entities.Movie;
 
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 
 public interface CustomerServiceInterface {
     public Cinema[] getAllCinemas();
@@ -18,7 +18,7 @@ public interface CustomerServiceInterface {
     public Movie[] getStreamingMoviesByGenreFromCinema(Cinema c, String genre);
     public Actor getDetailsAboutActor(String name);
     public Movie getDetailsAboutMovie(String title);
-    public Movie[] getStreamingMoviesByDate(LocalDateTime date);
+    public Movie[] getStreamingMoviesByDate(LocalDate date);
     public Movie[] getAllMoviesByActor(String name);
     public Movie[] getStreamingMoviesByActor(String name);
     public void buyTicket(Cinema c, Movie m);

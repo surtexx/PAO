@@ -11,7 +11,7 @@ public class Thriller_Movie extends Movie {
         super(title, director, release_year, duration, actors, rating, oscar_awards);
         this.subgenres = subgenres;
         if(pegi_rating != 3 && pegi_rating != 7 && pegi_rating != 12 && pegi_rating != 16 && pegi_rating != 18)
-            throw new IllegalArgumentException("Invalid PEGI rating. (Possible values: 3, 7, 12, 16, 18)");
+            throw new IllegalArgumentException("Invalid PEGI rating for movie " + title + ". (Possible values: 3, 7, 12, 16, 18)");
         else
             this.pegi_rating = pegi_rating;
     }
@@ -28,6 +28,16 @@ public class Thriller_Movie extends Movie {
         this.pegi_rating = film.pegi_rating;
     }
 
+    public int getPegi_rating() {
+        return pegi_rating;
+    }
+
+    public void setPegi_rating(int pegi_rating) {
+        if(pegi_rating != 3 && pegi_rating != 7 && pegi_rating != 12 && pegi_rating != 16 && pegi_rating != 18)
+            throw new IllegalArgumentException("Invalid PEGI rating for movie " + title + ". (Possible values: 3, 7, 12, 16, 18)");
+        else
+            this.pegi_rating = pegi_rating;
+    }
     public String[] getSubgenres() {
         return subgenres;
     }

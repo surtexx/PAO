@@ -2,36 +2,20 @@ package services;
 
 import data_types.Gender;
 import entities.*;
+import persistence.CinemaRepository;
+import persistence.CustomerRepository;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.HashMap;
 
 public class CustomerService implements CustomerServiceInterface {
-    private Cinema[] cinemas;
+    private final Cinema[] cinemas;
     private static CustomerService instance;
-
+    private final CustomerRepository customerRepository;
     private CustomerService(){
-        Actor the_rock = new Actor("Dwayne", "Johnson", 42, Gender.M, 5);
-        Actor tom_cruise = new Actor("Tom", "Cruise", 51, Gender.M, 3);
-        Actor scarlett_johansson = new Actor("Scarlett", "Johansson", 37, Gender.F, 1);
-        Actor charlie_cox = new Actor("Charlie", "Cox", 41, Gender.M, 100);
-        Actor[] actors1 = {tom_cruise, the_rock};
-        Actor[] actors2 = {scarlett_johansson, charlie_cox};
-        Actor[] actors3 = {the_rock, scarlett_johansson};
-        Actor[] actors4 = {tom_cruise, charlie_cox};
-        Actor[] actors5 = {the_rock, scarlett_johansson, charlie_cox};
-        Actor[] actors6 = {tom_cruise, scarlett_johansson, charlie_cox};
-        Movie m1 = new Action_Movie("Movie 1", "James Gunn", 2019, 105, actors1, 7.2, 1, 16);
-        Movie m2 = new Action_Movie("Movie 2", "Sam Raimi", 2016, 121, actors2, 8.1, 2, 12);
-        Movie m3 = new Thriller_Movie("Movie 3", "Christofer Nolan", 2021, 116, actors3, 8.7, 5, new String[]{"Drama", "Action", "Horror"}, 18);
-        Movie m4 = new Comedy_Movie("Movie 4", "James Gunn", 2012, 109, actors4, 6.8, 0, false, false);
-        Movie m5 = new Romance_Movie("Movie 5", "James Gunn", 2019, 105, actors1, 7.2, 1, true);
-        Movie m6 = new Other_Movie("Movie 6", "James Gunn", 2019, 105, actors1, 7.2, 1, new String[]{"SF", "Cyberpunk"}, 18);
-        Movie[] movies1 = {m1, m2, m3, m4};
-        Movie[] movies2 = {m5, m6};
-        Cinema c1 = new Cinema("Cinema City", movies1, 3, new int[]{60, 75, 60});
-        Cinema c2 = new Cinema("Happy Cinema", movies2, 4, new int[]{80, 55, 70, 76});
-        cinemas = new Cinema[]{c1, c2};
+        customerRepository = new CustomerRepository();
+        cinemas = customerRepository.getAllCinemas();
     }
 
     public static CustomerService getInstance(){
@@ -46,25 +30,36 @@ public class CustomerService implements CustomerServiceInterface {
     }
 
     public Movie[] getAllMovies(){
-        Movie[] movies = new Movie[0];
+        int max_movies = 0;
+        for(Cinema c : cinemas){
+            max_movies += c.getListed_movies().length;
+        }
+        Movie[] movies = new Movie[max_movies];
+        int index = 0;
         for(Cinema c : cinemas){
             for(Movie m : c.getListed_movies()){
-                if(movies.length == 0){
-                    movies = new Movie[movies.length + 1];
-                    movies[movies.length - 1] = m;
-                    continue;
-                }
-                for(Movie mm : movies)
-                    if(mm.equals(m))
-                        continue;
-                Movie[] new_movies = new Movie[movies.length + 1];
-                for(int i = 0; i < movies.length; i++)
-                    new_movies[i] = movies[i];
-                new_movies[new_movies.length - 1] = m;
-                movies = new_movies;
+                movies[index] = m;
+                index++;
             }
         }
-        return movies;
+        Movie[] new_movies = new Movie[0];
+        for(Movie m : movies){
+            boolean found = false;
+            for(Movie m2 : new_movies){
+                if(m.toString().equals(m2.toString())){
+                    found = true;
+                    break;
+                }
+            }
+            if(!found){
+                Movie[] new_new_movies = new Movie[new_movies.length + 1];
+                for(int i = 0; i < new_movies.length; i++)
+                    new_new_movies[i] = new_movies[i];
+                new_new_movies[new_new_movies.length - 1] = m;
+                new_movies = new_new_movies;
+            }
+        }
+        return new_movies;
     }
 
     public Movie[] getAllStreamingMovies(){
@@ -393,11 +388,11 @@ public class CustomerService implements CustomerServiceInterface {
         return null;
     }
 
-    public Movie[] getStreamingMoviesByDate(LocalDateTime date) {
+    public Movie[] getStreamingMoviesByDate(LocalDate date) {
         Movie[] movies = new Movie[0];
         for(Cinema c : cinemas) {
             for(Movie m : c.getStreaming_dates().keySet()) {
-                if(c.getStreaming_dates().get(m).equals(date)) {
+                if(c.getStreaming_dates().get(m).toLocalDate().equals(date)) {
                     Movie[] new_movies = new Movie[movies.length + 1];
                     for(int i = 0; i < movies.length; i++)
                         new_movies[i] = movies[i];
@@ -410,20 +405,16 @@ public class CustomerService implements CustomerServiceInterface {
     }
 
     public Movie[] getAllMoviesByActor(String name) {
+        Movie[] all_movies = getAllMovies();
         Movie[] movies = new Movie[0];
-        for(Cinema c : cinemas) {
-            for(Movie m : c.getListed_movies()) {
-                for(Movie m2 : movies)
-                    if(m2.equals(m))
-                        continue;
-                for(Actor a : m.getActors()) {
-                    if(a.getName().equalsIgnoreCase(name)) {
-                        Movie[] new_movies = new Movie[movies.length + 1];
-                        for(int i = 0; i < movies.length; i++)
-                            new_movies[i] = movies[i];
-                        new_movies[new_movies.length - 1] = m;
-                        movies = new_movies;
-                    }
+        for(Movie m : all_movies) {
+            for(Actor a : m.getActors()) {
+                if(a.getName().equalsIgnoreCase(name)) {
+                    Movie[] new_movies = new Movie[movies.length + 1];
+                    for(int i = 0; i < movies.length; i++)
+                        new_movies[i] = movies[i];
+                    new_movies[new_movies.length - 1] = m;
+                    movies = new_movies;
                 }
             }
         }
@@ -452,9 +443,11 @@ public class CustomerService implements CustomerServiceInterface {
     }
     public void buyTicket(Cinema c, Movie m) {
         HashMap<Movie, Integer> seats = c.getSeats_available();
+        HashMap<Movie, LocalDateTime> dates = c.getStreaming_dates();
         if(c.getSeats_available().get(m) > 0) {
             seats.put(m, seats.get(m) - 1);
             c.setSeats_available(seats);
+            customerRepository.buyTicket(c, m, dates.get(m));
             System.out.println("Ticket bought successfully");
         }
         else

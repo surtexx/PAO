@@ -6,11 +6,11 @@ import entities.*;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
-import java.util.InputMismatchException;
-import java.util.Scanner;
+import java.util.*;
 
 public class Service {
     private static final Scanner scanner = new Scanner(System.in);
@@ -58,6 +58,24 @@ public class Service {
             }
         }
         return instance;
+    }
+
+    private boolean check_date_availability(Cinema c, Movie m, LocalDateTime actual_d, LocalDateTime d, int room){
+        Movie[] dates = c.getStreaming_dates().keySet().toArray(new Movie[0]);
+        for (Movie m1 : dates){
+            if(m1.toString().equals(m.toString()) && c.getStreaming_dates().get(m1) == actual_d && c.getRoom_numbers().get(m1) == room)
+                continue;
+            if(room == c.getRoom_numbers().get(m1)){
+                LocalDateTime date = c.getStreaming_dates().get(m1);
+                if(date.compareTo(d) == 0)
+                    return false;
+                if(date.compareTo(d) < 0 && date.plusMinutes(m1.getDuration() + 15).compareTo(d) > 0)
+                    return false;
+                if(date.compareTo(d) > 0 && d.plusMinutes(m.getDuration() + 15).compareTo(date) > 0)
+                    return false;
+            }
+        }
+        return true;
     }
 
     public void menu() throws IOException {
@@ -259,12 +277,12 @@ public class Service {
                             System.out.println("---- " + m.getTitle() + " ----");
                 }
                 case 12 -> {
-                    System.out.println("Write date (yyyy-MM-dd/HH:mm): ");
+                    System.out.println("Write date (yyyy-MM-dd): ");
                     boolean valid_date = false;
-                    LocalDateTime date = null;
+                    LocalDate date = null;
                     while(!valid_date)
                         try {
-                            date = LocalDateTime.parse(scanner.next(), DateTimeFormatter.ofPattern("yyyy-MM-dd/HH:mm"));
+                            date = LocalDate.parse(scanner.next(), DateTimeFormatter.ofPattern("yyyy-MM-dd"));
                             valid_date = true;
                         }
                         catch (DateTimeParseException e) {
@@ -323,7 +341,6 @@ public class Service {
                     catch (Exception e){
                         System.out.println("Invalid choice");
                         scanner.nextLine();
-                        scanner.nextLine();
                         break;
                     }
                     Movie[] all_movies6 = customerService.getStreamingMoviesFromCinema(all_cinemas5[choice_cinema5 - 1]);
@@ -339,8 +356,9 @@ public class Service {
                     System.out.println("Choose movie: ");
                     Movie[] all_movies5 = customerService.getStreamingMoviesFromCinema(c5);
                     int i6 = 1;
+                    // show al streaming movies and their dates
                     for (Movie m5 : all_movies5) {
-                        System.out.println(i6 + ". " + m5.getTitle());
+                        System.out.println(i6 + ". " + m5.getTitle() + " (" + c5.getStreaming_dates().get(m5) + ")");
                         i6++;
                     }
                     int choice_movie5;
@@ -381,147 +399,30 @@ public class Service {
                         System.out.println("---- " + c.getName() + " ----");
                 }
                 case 2 -> {
+                    Movie[] movies = cinemaService.getMovies();
+                    for (Movie m : movies)
+                        System.out.println("---- " + m.getTitle() + " ----");
+                }
+                case 3-> {
+                    Actor[] actors = cinemaService.getActors();
+                    for (Actor a : actors)
+                        System.out.println("---- " + a.getName() + " ----");
+                }
+                case 4 -> {
                     System.out.println("Write cinema's name: ");
                     scanner.nextLine();
                     String name = scanner.nextLine();
-                    System.out.println("Write cinema's number of movies: ");
-                    int movies = scanner.nextInt();
-                    Movie[] movies1 = new Movie[movies];
-                    for (int i = 0; i < movies; i++) {
-                        System.out.println("Movie " + i + ": ");
-                        System.out.println("    Write movie's name: ");
-                        scanner.nextLine();
-                        String movie_title = scanner.nextLine();
-                        System.out.println("    Write the movie director's name: ");
-                        String director_name = scanner.nextLine();
-                        System.out.println("    Write the year the movie got released: ");
-                        int year = scanner.nextInt();
-                        System.out.println("    Write the movie's duration: ");
-                        int duration = scanner.nextInt();
-                        System.out.println("    Write the movie's rating: ");
-                        double rating = scanner.nextDouble();
-                        System.out.println("    Write the movie's number of Oscar awards: ");
-                        int oscar_awards = scanner.nextInt();
-                        System.out.println("    Write the movie's number of actors: ");
-                        int actors = scanner.nextInt();
-                        Actor[] actors1 = new Actor[actors];
-                        for (int j = 0; j < actors; j++) {
-                            System.out.println("    Actor " + j + ": ");
-                            System.out.println("        Write actor's first name: ");
-                            String actor_first_name = scanner.next();
-                            System.out.println("        Write actor's last name: ");
-                            String actor_last_name = scanner.next();
-                            System.out.println("        Write actor's age: ");
-                            int actor_age = scanner.nextInt();
-                            System.out.println("        Write actor's gender (M/F): ");
-                            String line = scanner.next();
-                            Gender gender = null;
-                            while (!line.equalsIgnoreCase("M") && !line.equalsIgnoreCase("F")) {
-                                System.out.println("        Invalid gender. Try again: ");
-                                line = scanner.next();
-                            }
-                            if (line.equalsIgnoreCase("M"))
-                                gender = Gender.M;
-                            else if (line.equalsIgnoreCase("F"))
-                                gender = Gender.F;
-                            System.out.println("        Write actor's number of Oscar awards: ");
-                            int actor_oscar_awards = scanner.nextInt();
-                            Actor a = new Actor(actor_first_name, actor_last_name, actor_age, gender, actor_oscar_awards);
-                            actors1[j] = a;
-                        }
-                        System.out.println("    Write the movie's genre (Action, Comedy, Romance, Thriller, Other): ");
-                        String line = scanner.next();
-                        switch (line.toLowerCase()) {
-                            case "action" -> {
-                                System.out.println("    Write the movie's PEGI rating: ");
-                                int pegi;
-                                pegi = scanner.nextInt();
-                                boolean ok = false;
-                                while (!ok) {
-                                    try {
-                                        movies1[i] = new Action_Movie(movie_title, director_name, year, duration, actors1, rating, oscar_awards, pegi);
-                                        ok = true;
-                                    } catch (IllegalArgumentException e) {
-                                        System.out.println(e.getMessage());
-                                        System.out.println("    Try again: ");
-                                        scanner.nextLine();
-                                        pegi = scanner.nextInt();
-                                    }
-                                }
-                            }
-                            case "comedy" -> {
-                                System.out.println("    Is the movie only for adults? (y/n) ");
-                                line = scanner.next();
-                                boolean only_for_adults = false;
-                                while (!line.equalsIgnoreCase("y") && !line.equalsIgnoreCase("n")) {
-                                    System.out.println("        Invalid choice. Try again: ");
-                                    line = scanner.next();
-                                }
-                                if (line.equalsIgnoreCase("y"))
-                                    only_for_adults = true;
-                                System.out.println("    Is the movie romantic? (y/n) ");
-                                line = scanner.next();
-                                boolean is_romantic = false;
-                                while (!line.equalsIgnoreCase("y") && !line.equalsIgnoreCase("n")) {
-                                    System.out.println("        Invalid choice. Try again: ");
-                                    line = scanner.next();
-                                }
-                                if (line.equalsIgnoreCase("y"))
-                                    is_romantic = true;
-                                movies1[i] = new Comedy_Movie(movie_title, director_name, year, duration, actors1, rating, oscar_awards, only_for_adults, is_romantic);
-                            }
-                            case "romance" -> {
-                                System.out.println("    Does the movie have explicit nudity? (y/n) ");
-                                line = scanner.next();
-                                boolean explicit_nudity = false;
-                                while (!line.equalsIgnoreCase("y") && !line.equalsIgnoreCase("n")) {
-                                    System.out.println("        Invalid choice. Try again: ");
-                                    line = scanner.next();
-                                }
-                                if (line.equalsIgnoreCase("y"))
-                                    explicit_nudity = true;
-                                movies1[i] = new Romance_Movie(movie_title, director_name, year, duration, actors1, rating, oscar_awards, explicit_nudity);
-                            }
-                            case "thriller" -> {
-                                System.out.println("    Write all the subgenres of the movie (separated by a comma): ");
-                                line = scanner.nextLine();
-                                String[] subgenres = line.split(",");
-                                System.out.println("    Write the movie's PEGI rating: ");
-                                int pegi1 = scanner.nextInt();
-                                boolean ok1 = false;
-                                while (!ok1) {
-                                    try {
-                                        movies1[i] = new Thriller_Movie(movie_title, director_name, year, duration, actors1, rating, oscar_awards, subgenres, pegi1);
-                                        ok1 = true;
-                                    } catch (IllegalArgumentException e) {
-                                        System.out.println(e.getMessage());
-                                        System.out.println("    Try again: ");
-                                        scanner.nextLine();
-                                        pegi1 = scanner.nextInt();
-                                    }
-                                }
-                            }
-                            case "other" -> {
-                                System.out.println("    Write the movie's genres (separated by comma): ");
-                                line = scanner.next();
-                                String[] genres = line.split(",");
-                                System.out.println("    Write the movie's PEGI rating: ");
-                                int pegi2 = scanner.nextInt();
-                                boolean ok2 = false;
-                                while (!ok2) {
-                                    try {
-                                        movies1[i] = new Other_Movie(movie_title, director_name, year, duration, actors1, rating, oscar_awards, genres, pegi2);
-                                        ok2 = true;
-                                    } catch (IllegalArgumentException e) {
-                                        System.out.println(e.getMessage());
-                                        System.out.println("    Try again: ");
-                                        scanner.nextLine();
-                                        pegi2 = scanner.nextInt();
-                                    }
-                                }
-                            }
-                            default -> System.out.println("Invalid genre!");
-                        }
+                    Movie[] movies = cinemaService.getMovies();
+                    for (int i=0;i<movies.length;i++)
+                        System.out.println(i+1 + ". " + movies[i].getTitle());
+                    System.out.println("Write movies IDs for the cinema (one space between each ID): ");
+                    String[] movies_ids = scanner.nextLine().split(" ");
+                    Set<String> movies_ids_set = new HashSet<>(Arrays.asList(movies_ids));
+                    Movie[] movies1 = new Movie[movies_ids_set.size()];
+                    int j = 0;
+                    for (String s : movies_ids_set) {
+                        movies1[j] = movies[Integer.parseInt(s) - 1];
+                        j++;
                     }
                     System.out.println("Write cinema's number of rooms: ");
                     int rooms = scanner.nextInt();
@@ -535,7 +436,7 @@ public class Service {
                     Cinema c = new Cinema(name, movies1, rooms, seats);
                     cinemaService.addCinema(c);
                 }
-                case 3 -> {
+                case 5 -> {
                     Cinema[] all_cinemas = cinemaService.getCinemas();
                     int i = 1;
                     for (Cinema c1 : all_cinemas) {
@@ -558,7 +459,208 @@ public class Service {
                     Cinema c1 = all_cinemas[choice_cinema - 1];
                     cinemaService.removeCinema(c1);
                 }
-                case 4 -> {
+                case 6 ->{
+                    System.out.println("Write the movie's type (action, comedy, romance, thriller, other): ");
+                    scanner.nextLine();
+                    String type = null;
+                    do {
+                        type = scanner.nextLine();
+                        if (!type.toLowerCase().equals("action") && !type.toLowerCase().equals("comedy") && !type.toLowerCase().equals("romance") && !type.toLowerCase().equals("other") && !type.toLowerCase().equals("thriller"))
+                            System.out.println("Invalid type! Please try again");
+                    }while (!type.toLowerCase().equals("action") && !type.toLowerCase().equals("comedy") && !type.toLowerCase().equals("romance") && !type.toLowerCase().equals("other") && !type.toLowerCase().equals("thriller"));
+
+                    System.out.println("Write movie's name: ");
+                    String movie_title = scanner.nextLine();
+                    System.out.println("Write the movie director's name: ");
+                    String director_name = scanner.nextLine();
+                    System.out.println("Write the year the movie got released: ");
+                    int year = scanner.nextInt();
+                    System.out.println("Write the movie's duration: ");
+                    int duration = scanner.nextInt();
+                    System.out.println("Write the movie's rating: ");
+                    double rating = scanner.nextDouble();
+                    System.out.println("Write the movie's number of Oscar awards: ");
+                    int oscar_awards = scanner.nextInt();
+                    Actor[] actors = cinemaService.getActors();
+                    for (int i=0;i<actors.length;i++)
+                        System.out.println(i+1 + ". " + actors[i].getName());
+                    System.out.println("Write actors IDs for the movie (one space between each ID): ");
+                    scanner.nextLine();
+                    String[] actors_ids = scanner.nextLine().split(" ");
+                    Set<String> actors_ids_set = new HashSet<>(Arrays.asList(actors_ids));
+                    Actor[] actors1 = new Actor[actors_ids_set.size()];
+                    int j = 0;
+                    for (String s : actors_ids_set) {
+                        actors1[j] = actors[Integer.parseInt(s) - 1];
+                        j++;
+                    }
+                    Movie m;
+                    switch (type) {
+                        case "action" -> {
+                            int pegi_rating = -1;
+                            System.out.println("Write the movie's PEGI rating: ");
+                            do {
+                                try {
+                                    pegi_rating = scanner.nextInt();
+                                    m = new Action_Movie(movie_title, director_name, year, duration, actors1, rating, oscar_awards, pegi_rating);
+                                    break;
+                                }
+                                catch (IllegalArgumentException e) {
+                                    System.out.println(e.getMessage());
+                                    continue;
+                                }
+                            } while (true);
+                        }
+                        case "comedy" -> {
+                            boolean adults_only = false;
+                            boolean romance = false;
+                            System.out.println("Is the movie for adults only? (y/n): ");
+                            String answer;
+                            do {
+                                answer = scanner.nextLine();
+                                if (answer.toLowerCase().equals("y"))
+                                    adults_only = true;
+                                else if (!answer.toLowerCase().equals("n")) {
+                                    System.out.println("Invalid answer! Please try again");
+                                }
+                            }while (!answer.toLowerCase().equals("y") && !answer.toLowerCase().equals("n"));
+                            System.out.println("Is the movie a romantic comedy? (y/n): ");
+                            do {
+                                answer = scanner.nextLine();
+                                if (answer.toLowerCase().equals("y"))
+                                    romance = true;
+                                else if (!answer.toLowerCase().equals("n"))
+                                    System.out.println("Invalid answer! Please try again");
+                                }while (!answer.toLowerCase().equals("y") && !answer.toLowerCase().equals("n"));
+                                m = new Comedy_Movie(movie_title, director_name, year, duration, actors1, rating, oscar_awards, adults_only, romance);
+                            }
+                        case "romance" -> {
+                            boolean explicit_nudity = false;
+                            System.out.println("Does the movie contain explicit nudity? (y/n): ");
+                            String answer;
+                            do {
+                                answer = scanner.nextLine();
+                                if (answer.toLowerCase().equals("y"))
+                                    explicit_nudity = true;
+                                else if (!answer.toLowerCase().equals("n"))
+                                    System.out.println("Invalid answer! Please try again");
+                            } while (!answer.toLowerCase().equals("y") && !answer.toLowerCase().equals("n"));
+                            m = new Romance_Movie(movie_title, director_name, year, duration, actors1, rating, oscar_awards, explicit_nudity);
+                        }
+                        case "thriller" -> {
+                            String[] subgenres;
+                            int pegi_rating;
+                            System.out.println("Write the movie's subgenres (one space between each subgenre): ");
+                            scanner.nextLine();
+                            subgenres = scanner.nextLine().split(" ");
+                            System.out.println("Write the movie's PEGI rating: ");
+                            do {
+                                try {
+                                    pegi_rating = scanner.nextInt();
+                                    m = new Thriller_Movie(movie_title, director_name, year, duration, actors1, rating, oscar_awards, subgenres, pegi_rating);
+                                    break;
+                                }
+                                catch (IllegalArgumentException e) {
+                                    System.out.println(e.getMessage());
+                                    continue;
+                                }
+                            } while (true);
+                        }
+                        default -> {
+                            String[] genres;
+                            int pegi_rating;
+                            System.out.println("Write the movie's subgenres (one space between each subgenre): ");
+                            genres = scanner.nextLine().split(" ");
+                            System.out.println("Write the movie's PEGI rating: ");
+                            do {
+                                try {
+                                    pegi_rating = scanner.nextInt();
+                                    m = new Other_Movie(movie_title, director_name, year, duration, actors1, rating, oscar_awards, genres, pegi_rating);
+                                    break;
+                                }
+                                catch (IllegalArgumentException e) {
+                                    System.out.println(e.getMessage());
+                                    continue;
+                                }
+                            } while (true);
+                        }
+                    }
+                    cinemaService.addMovie(m);
+                }
+
+                case 7 -> {
+                    Movie[] movies = cinemaService.getMovies();
+                    int i = 1;
+                    for (Movie m : movies) {
+                        System.out.println(i + ". " + m.getTitle());
+                        i++;
+                    }
+                    System.out.println("Choose movie: ");
+                    int choice_movie;
+                    try{
+                        choice_movie = scanner.nextInt();
+                    } catch (InputMismatchException e) {
+                        System.out.println("Invalid choice");
+                        scanner.nextLine();
+                        break;
+                    }
+                    while (choice_movie < 1 || choice_movie > movies.length) {
+                        System.out.println("Invalid choice!");
+                        choice_movie = scanner.nextInt();
+                    }
+                    Movie m = movies[choice_movie - 1];
+                    cinemaService.removeMovie(m);
+                }
+
+                case 8 -> {
+                    System.out.println("Write actor's first name: ");
+                    String actor_first_name = scanner.next();
+                    System.out.println("Write actor's last name: ");
+                    String actor_last_name = scanner.next();
+                    System.out.println("Write actor's age: ");
+                    int actor_age = scanner.nextInt();
+                    System.out.println("Write actor's gender (M/F): ");
+                    String line = scanner.next();
+                    Gender gender = null;
+                    while (!line.equalsIgnoreCase("M") && !line.equalsIgnoreCase("F")) {
+                        System.out.println("Invalid gender. Try again: ");
+                        line = scanner.next();
+                    }
+                    if (line.equalsIgnoreCase("M"))
+                        gender = Gender.M;
+                    else if (line.equalsIgnoreCase("F"))
+                        gender = Gender.F;
+                    System.out.println("Write actor's number of Oscar awards: ");
+                    int actor_oscar_awards = scanner.nextInt();
+                    Actor a = new Actor(actor_first_name, actor_last_name, actor_age, gender, actor_oscar_awards);
+                    cinemaService.addActor(a);
+                }
+
+                case 9 ->{
+                    Actor[] actors = cinemaService.getActors();
+                    int i = 1;
+                    for (Actor a : actors) {
+                        System.out.println(i + ". " + a.getName());
+                        i++;
+                    }
+                    System.out.println("Choose actor: ");
+                    int choice_actor;
+                    try{
+                        choice_actor = scanner.nextInt();
+                    } catch (InputMismatchException e) {
+                        System.out.println("Invalid choice");
+                        scanner.nextLine();
+                        break;
+                    }
+                    while (choice_actor < 1 || choice_actor > actors.length) {
+                        System.out.println("Invalid choice!");
+                        choice_actor = scanner.nextInt();
+                    }
+                    Actor a = actors[choice_actor - 1];
+                    cinemaService.removeActor(a);
+                }
+
+                case 10 -> {
                     Cinema[] all_cinemas1 = cinemaService.getCinemas();
                     int i1 = 1;
                     for (Cinema c2 : all_cinemas1) {
@@ -579,145 +681,27 @@ public class Service {
                         choice_cinema1 = scanner.nextInt();
                     }
                     Cinema c2 = all_cinemas1[choice_cinema1 - 1];
-                    Movie movie = null;
-                    System.out.println("Write movie's name: ");
-                    scanner.nextLine();
-                    String movie_title = scanner.nextLine();
-                    System.out.println("Write the movie director's name: ");
-                    String director_name = scanner.nextLine();
-                    System.out.println("Write the year the movie got released: ");
-                    int year = scanner.nextInt();
-                    System.out.println("Write the movie's duration: ");
-                    int duration = scanner.nextInt();
-                    System.out.println("Write the movie's rating: ");
-                    double rating = scanner.nextDouble();
-                    System.out.println("Write the movie's number of Oscar awards: ");
-                    int oscar_awards = scanner.nextInt();
-                    System.out.println("Write the movie's number of actors: ");
-                    int actors = scanner.nextInt();
-                    Actor[] actors1 = new Actor[actors];
-                    for (int j = 0; j < actors; j++) {
-                        System.out.println("Actor " + j + ": ");
-                        System.out.println("    Write actor's first name: ");
-                        String actor_first_name = scanner.next();
-                        System.out.println("    Write actor's last name: ");
-                        String actor_last_name = scanner.next();
-                        System.out.println("    Write actor's age: ");
-                        int actor_age = scanner.nextInt();
-                        System.out.println("    Write actor's gender (M/F): ");
-                        String line = scanner.next();
-                        Gender gender = null;
-                        while (!line.equalsIgnoreCase("M") && !line.equalsIgnoreCase("F")) {
-                            System.out.println("    Invalid gender. Try again: ");
-                            line = scanner.next();
-                        }
-                        if (line.equalsIgnoreCase("M"))
-                            gender = Gender.M;
-                        else if (line.equalsIgnoreCase("F"))
-                            gender = Gender.F;
-                        System.out.println("    Write actor's number of Oscar awards: ");
-                        int actor_oscar_awards = scanner.nextInt();
-                        Actor a = new Actor(actor_first_name, actor_last_name, actor_age, gender, actor_oscar_awards);
-                        actors1[j] = a;
+                    Movie[] movies = cinemaService.getMovies();
+                    for (int i = 0; i < movies.length; i++)
+                        System.out.println(i + 1 + ". " + movies[i].getTitle());
+                    System.out.println("Choose movie: ");
+                    int choice_movie;
+                    try{
+                        choice_movie = scanner.nextInt();
+                    } catch (InputMismatchException e) {
+                        System.out.println("Invalid choice");
+                        scanner.nextLine();
+                        break;
                     }
-                    System.out.println("Write the movie's genre (Action, Comedy, Romance, Thriller, Other): ");
-                    String line = scanner.next();
-                    switch (line.toLowerCase()) {
-                        case "action" -> {
-                            System.out.println("    Write the movie's PEGI rating: ");
-                            int pegi = scanner.nextInt();
-                            boolean ok = false;
-                            while (!ok) {
-                                try {
-                                    movie = new Action_Movie(movie_title, director_name, year, duration, actors1, rating, oscar_awards, pegi);
-                                    ok = true;
-                                } catch (IllegalArgumentException e) {
-                                    System.out.println(e.getMessage());
-                                    System.out.println("    Try again: ");
-                                    scanner.nextLine();
-                                    pegi = scanner.nextInt();
-                                }
-                            }
-                        }
-                        case "comedy" -> {
-                            System.out.println("    Is the movie only for adults? (y/n) ");
-                            line = scanner.next();
-                            boolean only_for_adults = false;
-                            while (!line.equalsIgnoreCase("y") && !line.equalsIgnoreCase("n")) {
-                                System.out.println("        Invalid choice. Try again: ");
-                                line = scanner.next();
-                            }
-                            if (line.equalsIgnoreCase("y"))
-                                only_for_adults = true;
-                            System.out.println("    Is the movie romantic? (y/n) ");
-                            line = scanner.next();
-                            boolean is_romantic = false;
-                            while (!line.equalsIgnoreCase("y") && !line.equalsIgnoreCase("n")) {
-                                System.out.println("        Invalid choice. Try again: ");
-                                line = scanner.next();
-                            }
-                            if (line.equalsIgnoreCase("y"))
-                                is_romantic = true;
-                            movie = new Comedy_Movie(movie_title, director_name, year, duration, actors1, rating, oscar_awards, only_for_adults, is_romantic);
-                        }
-                        case "romance" -> {
-                            System.out.println("    Does the movie have explicit nudity? (y/n) ");
-                            line = scanner.next();
-                            boolean explicit_nudity = false;
-                            while (!line.equalsIgnoreCase("y") && !line.equalsIgnoreCase("n")) {
-                                System.out.println("        Invalid choice. Try again: ");
-                                line = scanner.next();
-                            }
-                            if (line.equalsIgnoreCase("y"))
-                                explicit_nudity = true;
-                            movie = new Romance_Movie(movie_title, director_name, year, duration, actors1, rating, oscar_awards, explicit_nudity);
-                        }
-                        case "thriller" -> {
-                            System.out.println("    Write all the subgenres of the movie (separated by a comma): ");
-                            scanner.nextLine();
-                            line = scanner.nextLine();
-                            String[] subgenres = line.split(",");
-                            System.out.println("    Write the movie's PEGI rating: ");
-                            int pegi1 = scanner.nextInt();
-                            boolean ok1 = false;
-                            while (!ok1) {
-                                try {
-                                    movie = new Thriller_Movie(movie_title, director_name, year, duration, actors1, rating, oscar_awards, subgenres, pegi1);
-                                    ok1 = true;
-                                } catch (IllegalArgumentException e) {
-                                    System.out.println(e.getMessage());
-                                    System.out.println("    Try again: ");
-                                    scanner.nextLine();
-                                    pegi1 = scanner.nextInt();
-                                }
-                            }
-                        }
-                        case "other" -> {
-                            System.out.println("    Write the movie's genres (separated by comma): ");
-                            scanner.nextLine();
-                            line = scanner.nextLine();
-                            String[] genres = line.split(",");
-                            System.out.println("    Write the movie's PEGI rating: ");
-                            int pegi2 = scanner.nextInt();
-                            boolean ok2 = false;
-                            while (!ok2) {
-                                try {
-                                    movie = new Other_Movie(movie_title, director_name, year, duration, actors1, rating, oscar_awards, genres, pegi2);
-                                    ok2 = true;
-                                } catch (IllegalArgumentException e) {
-                                    System.out.println(e.getMessage());
-                                    System.out.println("    Try again: ");
-                                    scanner.nextLine();
-                                    pegi2 = scanner.nextInt();
-                                }
-                            }
-                        }
-                        default -> System.out.println("Invalid genre!");
+                    while (choice_movie < 1 || choice_movie > movies.length) {
+                        System.out.println("Invalid choice!");
+                        choice_movie = scanner.nextInt();
                     }
+                    Movie movie = movies[choice_movie - 1];
                     if (movie != null)
-                        cinemaService.addMovie(c2, movie);
+                            cinemaService.addMovieToCinema(c2, movie);
                 }
-                case 5 -> {
+                case 11 -> {
                     Cinema[] all_cinemas2 = cinemaService.getCinemas();
                     int i2 = 1;
                     for (Cinema c3 : all_cinemas2) {
@@ -764,9 +748,9 @@ public class Service {
                         choice_movie = scanner.nextInt();
                     }
                     Movie m = listed_movies[choice_movie - 1];
-                    cinemaService.removeMovie(c3, m);
+                    cinemaService.removeMovieFromCinema(c3, m);
                 }
-                case 6 -> {
+                case 12 -> {
                     Cinema[] all_cinemas3 = cinemaService.getCinemas();
                     int i3 = 1;
                     for (Cinema c4 : all_cinemas3) {
@@ -820,8 +804,15 @@ public class Service {
                     boolean ok = false;
                     while(!ok) {
                         try {
-                            date = LocalDateTime.parse(date_string, formatter);
-                            ok = true;
+                            do {
+                                date = LocalDateTime.parse(date_string, formatter);
+                                if (date.isBefore(LocalDateTime.now())){
+                                    System.out.println("Invalid date! You must choose a date in the future!");
+                                    date_string = scanner.next();
+                                }
+                                else
+                                    ok = true;
+                            } while (date.isBefore(LocalDateTime.now()));
                         } catch (DateTimeParseException e) {
                             System.out.println("Invalid date!");
                             System.out.println("Try again: ");
@@ -830,17 +821,27 @@ public class Service {
                     }
                     System.out.println("Write the price of the streaming: ");
                     int price = scanner.nextInt();
-                    System.out.println("Write the room of the streaming: ");
-                    int room = scanner.nextInt();
-                    try{
-                        cinemaService.streamMovie(c4, m2, date, room, price);
-                    }
-                    catch(IllegalArgumentException e){
-                        System.out.println(e.getMessage());
-                        scanner.nextLine();
+                    int room;
+                    System.out.println("Write the room number: ");
+                    do {
+                        room = scanner.nextInt();
+                        if(room < 1 || room > c4.getNr_seats().length)
+                            System.out.printf("Invalid room number! You must choose between 1 and %d\n", c4.getNr_seats().length);
+                    }while(room < 1 || room > c4.getNr_seats().length);
+                    if(!check_date_availability(c4, m2, c4.getStreaming_dates().get(m2), date, room))
+                        System.out.println("The room is not available at this date and time!");
+                    else
+                    {
+                        try{
+                            cinemaService.streamMovie(c4, m2, date, room, price);
+                        }
+                        catch(IllegalArgumentException e){
+                            System.out.println(e.getMessage());
+                            scanner.nextLine();
+                        }
                     }
                 }
-                case 7 -> {
+                case 13 -> {
                     Cinema[] all_cinemas4 = cinemaService.getCinemas();
                     int i4 = 1;
                     for (Cinema c5 : all_cinemas4) {
@@ -869,7 +870,7 @@ public class Service {
                     }
                     int j4 = 1;
                     for (Movie m3 : streaming_movies) {
-                        System.out.println(j4 + ". " + m3.getTitle());
+                        System.out.println(j4 + ". " + m3.getTitle() + " " + c5.getStreaming_dates().get(m3));
                         j4++;
                     }
                     System.out.println("Choose movie: ");
@@ -896,7 +897,7 @@ public class Service {
                         scanner.nextLine();
                     }
                 }
-                case 8 -> {
+                case 14 -> {
                     Cinema[] all_cinemas5 = cinemaService.getCinemas();
                     int i5 = 1;
                     for (Cinema c6 : all_cinemas5) {
@@ -925,7 +926,7 @@ public class Service {
                     }
                     int j5 = 1;
                     for (Movie m4 : streaming_movies2) {
-                        System.out.println(j5 + ". " + m4.getTitle());
+                        System.out.println(j5 + ". " + m4.getTitle() + " " + c6.getStreaming_dates().get(m4));
                         j5++;
                     }
                     System.out.println("Choose movie: ");
@@ -948,12 +949,12 @@ public class Service {
                     try{
                         cinemaService.changePrice(c6, m4, new_price);
                     }
-                    catch(IllegalArgumentException e){
+                    catch(IllegalArgumentException e) {
                         System.out.println(e.getMessage());
                         scanner.nextLine();
                     }
                 }
-                case 9 -> {
+                case 15 -> {
                     Cinema[] all_cinemas6 = cinemaService.getCinemas();
                     int i6 = 1;
                     for (Cinema c7 : all_cinemas6) {
@@ -982,7 +983,7 @@ public class Service {
                     }
                     int j6 = 1;
                     for (Movie m5 : streaming_movies3) {
-                        System.out.println(j6 + ". " + m5.getTitle());
+                        System.out.println(j6 + ". " + m5.getTitle() + " " + c7.getStreaming_dates().get(m5));
                         j6++;
                     }
                     System.out.println("Choose movie: ");
@@ -1001,16 +1002,26 @@ public class Service {
                     }
                     Movie m5 = streaming_movies3[choice_movie5 - 1];
                     System.out.println("Write the new room of the streaming: ");
-                    int new_room = scanner.nextInt();
-                    try{
-                        cinemaService.changeRoom(c7, m5, new_room);
-                    }
-                    catch(IllegalArgumentException e){
-                        System.out.println(e.getMessage());
-                        scanner.nextLine();
+                    int new_room;
+                    do{
+                        new_room = scanner.nextInt();
+                        if(new_room < 1 || new_room > c7.getNr_seats().length)
+                            System.out.printf("Invalid room number! You must choose between 1 and %d\n",
+                                    c7.getNr_seats().length);
+                    }while(new_room < 1 || new_room > c7.getNr_seats().length);
+                    if(!check_date_availability(c7, m5, c7.getStreaming_dates().get(m5), c7.getStreaming_dates().get(m5), new_room))
+                        System.out.println("The room is not available at this date and time!");
+                    else{
+                        try{
+                            cinemaService.changeRoom(c7, m5, new_room);
+                        }
+                        catch(IllegalArgumentException e){
+                            System.out.println(e.getMessage());
+                            scanner.nextLine();
+                        }
                     }
                 }
-                case 10 -> {
+                case 16 -> {
                     Cinema[] all_cinemas7 = cinemaService.getCinemas();
                     int i7 = 1;
                     for (Cinema c8 : all_cinemas7) {
@@ -1039,7 +1050,7 @@ public class Service {
                     }
                     int j7 = 1;
                     for (Movie m6 : streaming_movies4) {
-                        System.out.println(j7 + ". " + m6.getTitle());
+                        System.out.println(j7 + ". " + m6.getTitle() + " " + c8.getStreaming_dates().get(m6));
                         j7++;
                     }
                     System.out.println("Choose movie: ");
@@ -1060,27 +1071,38 @@ public class Service {
                     System.out.println("Write the new date and time of the streaming (yyyy-MM-dd/HH:mm): ");
                     String date_string1 = scanner.next();
                     DateTimeFormatter formatter1 = DateTimeFormatter.ofPattern("yyyy-MM-dd/HH:mm");
-                    boolean valid_date1 = false;
-                    while (!valid_date1) {
+                    LocalDateTime date = null;
+                    boolean ok = false;
+                    while(!ok) {
                         try {
-                            LocalDateTime.parse(date_string1, formatter1);
-                            valid_date1 = true;
+                            do {
+                                date = LocalDateTime.parse(date_string1, formatter1);
+                                if (date.isBefore(LocalDateTime.now())){
+                                    System.out.println("Invalid date! You must choose a date in the future!");
+                                    date_string1 = scanner.next();
+                                }
+                                else
+                                    ok = true;
+                            } while (date.isBefore(LocalDateTime.now()));
                         } catch (DateTimeParseException e) {
                             System.out.println("Invalid date!");
                             System.out.println("Try again: ");
                             date_string1 = scanner.next();
                         }
                     }
-                    LocalDateTime date1 = LocalDateTime.parse(date_string1, formatter1);
-                    try{
-                        cinemaService.changeDate(c8, m6, date1);
-                    }
-                    catch(IllegalArgumentException e){
-                        System.out.println(e.getMessage());
-                        scanner.nextLine();
+                    if(!check_date_availability(c8, m6, c8.getStreaming_dates().get(m6), date, c8.getRoom_numbers().get(m6)))
+                        System.out.println("The room is not available at this date and time!");
+                    else{
+                        try{
+                            cinemaService.changeDate(c8, m6, date);
+                        }
+                        catch(IllegalArgumentException e){
+                            System.out.println(e.getMessage());
+                            scanner.nextLine();
+                        }
                     }
                 }
-                case 11 -> {
+                case 17 -> {
                     System.exit(0);
                 }
                 default -> System.out.println("Invalid choice!");
@@ -1109,16 +1131,22 @@ public class Service {
         }
         else if(cinemaService != null){
             System.out.println("1. List all cinemas");
-            System.out.println("2. Add a cinema");
-            System.out.println("3. Remove a cinema");
-            System.out.println("4. Add a movie");
-            System.out.println("5. Remove a movie");
-            System.out.println("6. Stream a movie");
-            System.out.println("7. Stop streaming a movie");
-            System.out.println("8. Change price of a movie");
-            System.out.println("9. Change room of a movie");
-            System.out.println("10. Change date of a movie");
-            System.out.println("11. Exit");
+            System.out.println("2. List all movies");
+            System.out.println("3. List all actors");
+            System.out.println("4. Add a cinema");
+            System.out.println("5. Remove a cinema");
+            System.out.println("6. Add a movie");
+            System.out.println("7. Remove a movie");
+            System.out.println("8. Add an actor");
+            System.out.println("9. Remove an actor");
+            System.out.println("10. Add a movie to a cinema");
+            System.out.println("11. Remove a movie from a cinema");
+            System.out.println("12. Stream a movie");
+            System.out.println("13. Stop streaming a movie");
+            System.out.println("14. Change price of a movie");
+            System.out.println("15. Change room of a movie");
+            System.out.println("16. Change date of a movie");
+            System.out.println("17. Exit");
         }
     }
 }
