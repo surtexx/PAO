@@ -1,8 +1,6 @@
 package services;
 
-import data_types.Gender;
 import entities.*;
-import persistence.CinemaRepository;
 import persistence.CustomerRepository;
 
 import java.time.LocalDate;
@@ -53,8 +51,7 @@ public class CustomerService implements CustomerServiceInterface {
             }
             if(!found){
                 Movie[] new_new_movies = new Movie[new_movies.length + 1];
-                for(int i = 0; i < new_movies.length; i++)
-                    new_new_movies[i] = new_movies[i];
+                System.arraycopy(new_movies, 0, new_new_movies, 0, new_movies.length);
                 new_new_movies[new_new_movies.length - 1] = m;
                 new_movies = new_new_movies;
             }
@@ -62,15 +59,12 @@ public class CustomerService implements CustomerServiceInterface {
         return new_movies;
     }
 
-    public Movie[] getAllStreamingMovies(){
-        Movie[] movies = new Movie[0];
+    public HashMap<Movie, LocalDateTime> getAllStreamingMovies(){
+        HashMap<Movie, LocalDateTime> movies = new HashMap<>();
         for(Cinema c : cinemas){
-            for(Movie m : c.getStreaming_dates().keySet()){
-                Movie[] new_movies = new Movie[movies.length + 1];
-                for(int i = 0; i < movies.length; i++)
-                    new_movies[i] = movies[i];
-                new_movies[new_movies.length - 1] = m;
-                movies = new_movies;
+            HashMap<Movie, LocalDateTime> streaming_dates = c.getStreaming_dates();
+            for(Movie m : streaming_dates.keySet()){
+                movies.put(m, streaming_dates.get(m));
             }
         }
         return movies;
@@ -80,8 +74,8 @@ public class CustomerService implements CustomerServiceInterface {
         return c.getListed_movies();
     }
 
-    public Movie[] getStreamingMoviesFromCinema(Cinema c){
-        return c.getStreaming_dates().keySet().toArray(new Movie[0]);
+    public HashMap<Movie, LocalDateTime> getStreamingMoviesFromCinema(Cinema c){
+        return c.getStreaming_dates();
     }
 
     public Movie[] getAllMoviesByGenre(String genre){
@@ -96,8 +90,7 @@ public class CustomerService implements CustomerServiceInterface {
                     for (Movie m : c.getListed_movies()) {
                         if (m instanceof Action_Movie) {
                             Movie[] new_movies = new Movie[movies.length + 1];
-                            for(int i = 0; i < movies.length; i++)
-                                new_movies[i] = movies[i];
+                            System.arraycopy(movies, 0, new_movies, 0, movies.length);
                             new_movies[new_movies.length - 1] = m;
                             movies = new_movies;
                         }
@@ -109,8 +102,7 @@ public class CustomerService implements CustomerServiceInterface {
                     for (Movie m : c.getListed_movies()) {
                         if (m instanceof Comedy_Movie) {
                             Movie[] new_movies = new Movie[movies.length + 1];
-                            for(int i = 0; i < movies.length; i++)
-                                new_movies[i] = movies[i];
+                            System.arraycopy(movies, 0, new_movies, 0, movies.length);
                             new_movies[new_movies.length - 1] = m;
                             movies = new_movies;
                         }
@@ -122,8 +114,7 @@ public class CustomerService implements CustomerServiceInterface {
                     for (Movie m : c.getListed_movies()) {
                         if (m instanceof Romance_Movie) {
                             Movie[] new_movies = new Movie[movies.length + 1];
-                            for(int i = 0; i < movies.length; i++)
-                                new_movies[i] = movies[i];
+                            System.arraycopy(movies, 0, new_movies, 0, movies.length);
                             new_movies[new_movies.length - 1] = m;
                             movies = new_movies;
                         }
@@ -135,8 +126,7 @@ public class CustomerService implements CustomerServiceInterface {
                     for (Movie m : c.getListed_movies()) {
                         if (m instanceof Thriller_Movie) {
                             Movie[] new_movies = new Movie[movies.length + 1];
-                            for(int i = 0; i < movies.length; i++)
-                                new_movies[i] = movies[i];
+                            System.arraycopy(movies, 0, new_movies, 0, movies.length);
                             new_movies[new_movies.length - 1] = m;
                             movies = new_movies;
                         }
@@ -148,8 +138,7 @@ public class CustomerService implements CustomerServiceInterface {
                     for (Movie m : c.getListed_movies()) {
                         if (m instanceof Other_Movie) {
                             Movie[] new_movies = new Movie[movies.length + 1];
-                            for(int i = 0; i < movies.length; i++)
-                                new_movies[i] = movies[i];
+                            System.arraycopy(movies, 0, new_movies, 0, movies.length);
                             new_movies[new_movies.length - 1] = m;
                             movies = new_movies;
                         }
@@ -160,74 +149,59 @@ public class CustomerService implements CustomerServiceInterface {
         return movies;
     }
 
-    public Movie[] getAllStreamingMoviesByGenre(String genre) {
+    public HashMap<Movie, LocalDateTime> getAllStreamingMoviesByGenre(String genre) {
         if(!genre.equalsIgnoreCase("Action") && !genre.equalsIgnoreCase("Comedy") &&
                 !genre.equalsIgnoreCase("Romance") && !genre.equalsIgnoreCase("Thriller") &&
                 !genre.equalsIgnoreCase("Other"))
             return null;
-        Movie[] movies = new Movie[0];
+        HashMap<Movie, LocalDateTime> movies = new HashMap<>();
         switch (genre.toLowerCase()) {
             case "action":
                 for (Cinema c : cinemas) {
-                    for (Movie m : c.getStreaming_dates().keySet()) {
+                    HashMap<Movie, LocalDateTime> streaming_dates = c.getStreaming_dates();
+                    for (Movie m : streaming_dates.keySet()) {
                         if (m instanceof Action_Movie) {
-                            Movie[] new_movies = new Movie[movies.length + 1];
-                            for(int i = 0; i < movies.length; i++)
-                                new_movies[i] = movies[i];
-                            new_movies[new_movies.length - 1] = m;
-                            movies = new_movies;
+                            movies.put(m, streaming_dates.get(m));
                         }
                     }
                 }
                 break;
             case "comedy":
                 for (Cinema c : cinemas) {
-                    for (Movie m : c.getStreaming_dates().keySet()) {
+                    HashMap<Movie, LocalDateTime> streaming_dates = c.getStreaming_dates();
+                    for (Movie m : streaming_dates.keySet()) {
                         if (m instanceof Comedy_Movie) {
-                            Movie[] new_movies = new Movie[movies.length + 1];
-                            for(int i = 0; i < movies.length; i++)
-                                new_movies[i] = movies[i];
-                            new_movies[new_movies.length - 1] = m;
-                            movies = new_movies;
+                            movies.put(m, streaming_dates.get(m));
                         }
                     }
                 }
                 break;
             case "romance":
                 for (Cinema c : cinemas) {
-                    for (Movie m : c.getStreaming_dates().keySet()) {
+                    HashMap<Movie, LocalDateTime> streaming_dates = c.getStreaming_dates();
+                    for (Movie m : streaming_dates.keySet()) {
                         if (m instanceof Romance_Movie) {
-                            Movie[] new_movies = new Movie[movies.length + 1];
-                            for(int i = 0; i < movies.length; i++)
-                                new_movies[i] = movies[i];
-                            new_movies[new_movies.length - 1] = m;
-                            movies = new_movies;
+                            movies.put(m, streaming_dates.get(m));
                         }
                     }
                 }
                 break;
             case "thriller":
                 for (Cinema c : cinemas) {
-                    for (Movie m : c.getStreaming_dates().keySet()) {
+                    HashMap<Movie, LocalDateTime> streaming_dates = c.getStreaming_dates();
+                    for (Movie m : streaming_dates.keySet()) {
                         if (m instanceof Thriller_Movie) {
-                            Movie[] new_movies = new Movie[movies.length + 1];
-                            for(int i = 0; i < movies.length; i++)
-                                new_movies[i] = movies[i];
-                            new_movies[new_movies.length - 1] = m;
-                            movies = new_movies;
+                            movies.put(m, streaming_dates.get(m));
                         }
                     }
                 }
                 break;
             case "other":
                 for (Cinema c : cinemas) {
-                    for (Movie m : c.getStreaming_dates().keySet()) {
+                    HashMap<Movie, LocalDateTime> streaming_dates = c.getStreaming_dates();
+                    for (Movie m : streaming_dates.keySet()) {
                         if (m instanceof Other_Movie) {
-                            Movie[] new_movies = new Movie[movies.length + 1];
-                            for(int i = 0; i < movies.length; i++)
-                                new_movies[i] = movies[i];
-                            new_movies[new_movies.length - 1] = m;
-                            movies = new_movies;
+                            movies.put(m, streaming_dates.get(m));
                         }
                     }
                 }
@@ -247,8 +221,7 @@ public class CustomerService implements CustomerServiceInterface {
                 for (Movie m : c.getListed_movies()) {
                     if (m instanceof Action_Movie) {
                         Movie[] new_movies = new Movie[movies.length + 1];
-                        for(int i = 0; i < movies.length; i++)
-                            new_movies[i] = movies[i];
+                        System.arraycopy(movies, 0, new_movies, 0, movies.length);
                         new_movies[new_movies.length - 1] = m;
                         movies = new_movies;
                     }
@@ -258,8 +231,7 @@ public class CustomerService implements CustomerServiceInterface {
                 for (Movie m : c.getListed_movies()) {
                     if (m instanceof Comedy_Movie) {
                         Movie[] new_movies = new Movie[movies.length + 1];
-                        for(int i = 0; i < movies.length; i++)
-                            new_movies[i] = movies[i];
+                        System.arraycopy(movies, 0, new_movies, 0, movies.length);
                         new_movies[new_movies.length - 1] = m;
                         movies = new_movies;
                     }
@@ -269,8 +241,7 @@ public class CustomerService implements CustomerServiceInterface {
                 for (Movie m : c.getListed_movies()) {
                     if (m instanceof Romance_Movie) {
                         Movie[] new_movies = new Movie[movies.length + 1];
-                        for(int i = 0; i < movies.length; i++)
-                            new_movies[i] = movies[i];
+                        System.arraycopy(movies, 0, new_movies, 0, movies.length);
                         new_movies[new_movies.length - 1] = m;
                         movies = new_movies;
                     }
@@ -280,8 +251,7 @@ public class CustomerService implements CustomerServiceInterface {
                 for (Movie m : c.getListed_movies()) {
                     if (m instanceof Thriller_Movie) {
                         Movie[] new_movies = new Movie[movies.length + 1];
-                        for(int i = 0; i < movies.length; i++)
-                            new_movies[i] = movies[i];
+                        System.arraycopy(movies, 0, new_movies, 0, movies.length);
                         new_movies[new_movies.length - 1] = m;
                         movies = new_movies;
                     }
@@ -291,8 +261,7 @@ public class CustomerService implements CustomerServiceInterface {
                 for (Movie m : c.getListed_movies()) {
                     if (m instanceof Other_Movie) {
                         Movie[] new_movies = new Movie[movies.length + 1];
-                        for(int i = 0; i < movies.length; i++)
-                            new_movies[i] = movies[i];
+                        System.arraycopy(movies, 0, new_movies, 0, movies.length);
                         new_movies[new_movies.length - 1] = m;
                         movies = new_movies;
                     }
@@ -302,65 +271,46 @@ public class CustomerService implements CustomerServiceInterface {
         return movies;
     }
 
-    public Movie[] getStreamingMoviesByGenreFromCinema(Cinema c, String genre) {
+    public HashMap<Movie, LocalDateTime> getStreamingMoviesByGenreFromCinema(Cinema c, String genre) {
         if(!genre.equalsIgnoreCase("Action") && !genre.equalsIgnoreCase("Comedy") &&
                 !genre.equalsIgnoreCase("Romance") && !genre.equalsIgnoreCase("Thriller") &&
                 !genre.equalsIgnoreCase("Other"))
             return null;
-        Movie[] movies = new Movie[0];
+        HashMap<Movie, LocalDateTime> movies = new HashMap<>();
+        HashMap<Movie, LocalDateTime> streaming_dates = c.getStreaming_dates();
         switch (genre.toLowerCase()) {
             case "action":
-                for (Movie m : c.getStreaming_dates().keySet()) {
+                for (Movie m : streaming_dates.keySet()) {
                     if (m instanceof Action_Movie) {
-                        Movie[] new_movies = new Movie[movies.length + 1];
-                        for(int i = 0; i < movies.length; i++)
-                            new_movies[i] = movies[i];
-                        new_movies[new_movies.length - 1] = m;
-                        movies = new_movies;
+                        movies.put(m, c.getStreaming_dates().get(m));
                     }
                 }
                 break;
             case "comedy":
-                for (Movie m : c.getStreaming_dates().keySet()) {
+                for (Movie m : streaming_dates.keySet()) {
                     if (m instanceof Comedy_Movie) {
-                        Movie[] new_movies = new Movie[movies.length + 1];
-                        for(int i = 0; i < movies.length; i++)
-                            new_movies[i] = movies[i];
-                        new_movies[new_movies.length - 1] = m;
-                        movies = new_movies;
+                        movies.put(m, c.getStreaming_dates().get(m));
                     }
                 }
                 break;
             case "romance":
-                for (Movie m : c.getStreaming_dates().keySet()) {
+                for (Movie m : streaming_dates.keySet()) {
                     if (m instanceof Romance_Movie) {
-                        Movie[] new_movies = new Movie[movies.length + 1];
-                        for(int i = 0; i < movies.length; i++)
-                            new_movies[i] = movies[i];
-                        new_movies[new_movies.length - 1] = m;
-                        movies = new_movies;
+                        movies.put(m, c.getStreaming_dates().get(m));
                     }
                 }
                 break;
             case "thriller":
-                for (Movie m : c.getStreaming_dates().keySet()) {
+                for (Movie m : streaming_dates.keySet()) {
                     if (m instanceof Thriller_Movie) {
-                        Movie[] new_movies = new Movie[movies.length + 1];
-                        for(int i = 0; i < movies.length; i++)
-                            new_movies[i] = movies[i];
-                        new_movies[new_movies.length - 1] = m;
-                        movies = new_movies;
+                        movies.put(m, c.getStreaming_dates().get(m));
                     }
                 }
                 break;
             case "other":
-                for (Movie m : c.getStreaming_dates().keySet()) {
+                for (Movie m : streaming_dates.keySet()) {
                     if (m instanceof Other_Movie) {
-                        Movie[] new_movies = new Movie[movies.length + 1];
-                        for(int i = 0; i < movies.length; i++)
-                            new_movies[i] = movies[i];
-                        new_movies[new_movies.length - 1] = m;
-                        movies = new_movies;
+                        movies.put(m, c.getStreaming_dates().get(m));
                     }
                 }
                 break;
@@ -388,16 +338,13 @@ public class CustomerService implements CustomerServiceInterface {
         return null;
     }
 
-    public Movie[] getStreamingMoviesByDate(LocalDate date) {
-        Movie[] movies = new Movie[0];
+    public HashMap<Movie, LocalDateTime> getStreamingMoviesByDate(LocalDate date) {
+        HashMap<Movie, LocalDateTime> movies = new HashMap<>();
         for(Cinema c : cinemas) {
-            for(Movie m : c.getStreaming_dates().keySet()) {
-                if(c.getStreaming_dates().get(m).toLocalDate().equals(date)) {
-                    Movie[] new_movies = new Movie[movies.length + 1];
-                    for(int i = 0; i < movies.length; i++)
-                        new_movies[i] = movies[i];
-                    new_movies[new_movies.length - 1] = m;
-                    movies = new_movies;
+            HashMap<Movie, LocalDateTime> streaming_dates = c.getStreaming_dates();
+            for(Movie m : streaming_dates.keySet()) {
+                if(streaming_dates.get(m).toLocalDate().equals(date)) {
+                    movies.put(m, streaming_dates.get(m));
                 }
             }
         }
@@ -411,8 +358,7 @@ public class CustomerService implements CustomerServiceInterface {
             for(Actor a : m.getActors()) {
                 if(a.getName().equalsIgnoreCase(name)) {
                     Movie[] new_movies = new Movie[movies.length + 1];
-                    for(int i = 0; i < movies.length; i++)
-                        new_movies[i] = movies[i];
+                    System.arraycopy(movies, 0, new_movies, 0, movies.length);
                     new_movies[new_movies.length - 1] = m;
                     movies = new_movies;
                 }
@@ -421,20 +367,14 @@ public class CustomerService implements CustomerServiceInterface {
         return movies;
     }
 
-    public Movie[] getStreamingMoviesByActor(String name) {
-        Movie[] movies = new Movie[0];
+    public HashMap<Movie, LocalDateTime> getStreamingMoviesByActor(String name) {
+        HashMap<Movie, LocalDateTime> movies = new HashMap<>();
         for(Cinema c : cinemas) {
-            for(Movie m : c.getStreaming_dates().keySet()) {
-                for(Movie m2 : movies)
-                    if(m2.equals(m))
-                        continue;
+            HashMap<Movie, LocalDateTime> streaming_dates = c.getStreaming_dates();
+            for(Movie m : streaming_dates.keySet()) {
                 for(Actor a : m.getActors()) {
                     if(a.getName().equalsIgnoreCase(name)) {
-                        Movie[] new_movies = new Movie[movies.length + 1];
-                        for(int i = 0; i < movies.length; i++)
-                            new_movies[i] = movies[i];
-                        new_movies[new_movies.length - 1] = m;
-                        movies = new_movies;
+                        movies.put(m, streaming_dates.get(m));
                     }
                 }
             }

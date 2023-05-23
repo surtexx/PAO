@@ -17,6 +17,7 @@ public class Service {
     private static Service instance;
     private static CustomerService customerService;
     private static CinemaService cinemaService;
+    Audit audit = Audit.getInstance();
     private Service(CinemaService cs){
         cinemaService = cs;
     }
@@ -78,7 +79,7 @@ public class Service {
         return true;
     }
 
-    public void menu() throws IOException {
+    public void menu(){
         while(true) {
             listMenu();
             chooseOption();
@@ -87,13 +88,11 @@ public class Service {
             try {
                 input.readLine();
             }
-            catch (Exception e) {
-
-            }
+            catch (Exception ignored) {}
         }
     }
 
-    private void chooseOption(){
+    private void chooseOption() {
         if(customerService != null) {
             int choice;
             try {
@@ -109,16 +108,19 @@ public class Service {
                     Cinema[] cinemas = customerService.getAllCinemas();
                     for (Cinema c : cinemas)
                         System.out.println("---- " + c.getName() + " ----");
+                    audit.write("Listed all cinemas");
                 }
                 case 2 -> {
                     Movie[] movies = customerService.getAllMovies();
                     for (Movie m : movies)
                         System.out.println("---- " + m.getTitle() + " ----");
+                    audit.write("Listed all movies");
                 }
                 case 3 -> {
-                    Movie[] streaming_movies = customerService.getAllStreamingMovies();
-                    for (Movie m : streaming_movies)
-                        System.out.println("---- " + m.getTitle() + " ----");
+                    HashMap<Movie, LocalDateTime> streaming_movies = customerService.getAllStreamingMovies();
+                    for (Movie m : streaming_movies.keySet())
+                        System.out.println("---- " + m.getTitle() + " (" + streaming_movies.get(m) + ") ----");
+                    audit.write("Listed all streaming movies");
                 }
                 case 4 -> {
                     Cinema[] all_cinemas = customerService.getAllCinemas();
@@ -145,6 +147,7 @@ public class Service {
                     Movie[] movies_from_cinema = customerService.getMoviesFromCinema(c);
                     for (Movie m : movies_from_cinema)
                         System.out.println("---- " + m.getTitle() + " ----");
+                    audit.write("Listed all movies from " + c.getName());
                 }
                 case 5 -> {
                     Cinema[] all_cinemas2 = customerService.getAllCinemas();
@@ -168,9 +171,10 @@ public class Service {
                         choice_cinema2 = scanner.nextInt();
                     }
                     Cinema c2 = all_cinemas2[choice_cinema2 - 1];
-                    Movie[] streaming_movies_from_cinema = customerService.getStreamingMoviesFromCinema(c2);
-                    for (Movie m : streaming_movies_from_cinema)
-                        System.out.println("---- " + m.getTitle() + " ----");
+                    HashMap<Movie, LocalDateTime> streaming_movies_from_cinema = customerService.getStreamingMoviesFromCinema(c2);
+                    for (Movie m : streaming_movies_from_cinema.keySet())
+                        System.out.println("---- " + m.getTitle() + " (" + streaming_movies_from_cinema.get(m) + ") ----");
+                    audit.write("Listed all streaming movies from " + c2.getName());
                 }
                 case 6 -> {
                     System.out.println("Choose genre (Action, Comedy, Romance, Thriller, Other): ");
@@ -181,16 +185,18 @@ public class Service {
                     else
                         for (Movie m : movies_by_genre)
                             System.out.println("---- " + m.getTitle() + " ----");
+                    audit.write("Listed all movies by genre " + genre);
                 }
                 case 7 -> {
                     System.out.println("Choose genre(Action, Comedy, Romance, Thriller, Other): ");
                     String genre2 = scanner.next();
-                    Movie[] streaming_movies_by_genre = customerService.getAllStreamingMoviesByGenre(genre2);
+                    HashMap<Movie, LocalDateTime> streaming_movies_by_genre = customerService.getAllStreamingMoviesByGenre(genre2);
                     if (streaming_movies_by_genre == null)
                         System.out.println("No movies found!");
                     else
-                        for (Movie m : streaming_movies_by_genre)
-                            System.out.println("---- " + m.getTitle() + " ----");
+                        for (Movie m : streaming_movies_by_genre.keySet())
+                            System.out.println("---- " + m.getTitle() + " (" + streaming_movies_by_genre.get(m) + ") ----");
+                    audit.write("Listed all streaming movies by genre " + genre2);
                 }
                 case 8 -> {
                     Cinema[] all_cinemas3 = customerService.getAllCinemas();
@@ -222,6 +228,7 @@ public class Service {
                     else
                         for (Movie m : movies_by_genre_from_cinema)
                             System.out.println("---- " + m.getTitle() + " ----");
+                    audit.write("Listed all movies by genre " + genre3 + " from " + c3.getName());
                 }
                 case 9 -> {
                     Cinema[] all_cinemas4 = customerService.getAllCinemas();
@@ -247,12 +254,13 @@ public class Service {
                     Cinema c4 = all_cinemas4[choice_cinema4 - 1];
                     System.out.println("Choose genre(Action, Comedy, Romance, Thriller, Other): ");
                     String genre4 = scanner.next();
-                    Movie[] streaming_movies_by_genre_from_cinema = customerService.getStreamingMoviesByGenreFromCinema(c4, genre4);
+                    HashMap<Movie, LocalDateTime> streaming_movies_by_genre_from_cinema = customerService.getStreamingMoviesByGenreFromCinema(c4, genre4);
                     if (streaming_movies_by_genre_from_cinema == null)
                         System.out.println("No movies found!");
                     else
-                        for (Movie m : streaming_movies_by_genre_from_cinema)
-                            System.out.println("---- " + m.getTitle() + " ----");
+                        for (Movie m : streaming_movies_by_genre_from_cinema.keySet())
+                            System.out.println("---- " + m.getTitle() + " (" + streaming_movies_by_genre_from_cinema.get(m) + ") ----");
+                    audit.write("Listed all streaming movies by genre " + genre4 + " from " + c4.getName());
                 }
                 case 10 -> {
                     System.out.println("Write actor's name: ");
@@ -264,17 +272,19 @@ public class Service {
                     else
                         for (Movie m : movies_by_actor)
                             System.out.println("---- " + m.getTitle() + " ----");
+                    audit.write("Listed all movies by actor " + actor_first_name + " " + actor_last_name);
                 }
                 case 11 -> {
                     System.out.println("Write actor's name: ");
                     String actor_first_name1 = scanner.next();
                     String actor_last_name1 = scanner.next();
-                    Movie[] streaming_movies_by_actor = customerService.getStreamingMoviesByActor(actor_first_name1 + " " + actor_last_name1);
-                    if (streaming_movies_by_actor.length == 0)
+                    HashMap<Movie, LocalDateTime> streaming_movies_by_actor = customerService.getStreamingMoviesByActor(actor_first_name1 + " " + actor_last_name1);
+                    if (streaming_movies_by_actor.size() == 0)
                         System.out.println("No movies found with this actor!");
                     else
-                        for (Movie m : streaming_movies_by_actor)
-                            System.out.println("---- " + m.getTitle() + " ----");
+                        for (Movie m : streaming_movies_by_actor.keySet())
+                            System.out.println("---- " + m.getTitle() + " (" + streaming_movies_by_actor.get(m) + ") ----");
+                    audit.write("Listed all streaming movies by actor " + actor_first_name1 + " " + actor_last_name1);
                 }
                 case 12 -> {
                     System.out.println("Write date (yyyy-MM-dd): ");
@@ -289,18 +299,24 @@ public class Service {
                             System.out.println("Invalid date!");
                             System.out.println("Try again: ");
                         }
-                    Movie[] streaming_movies_by_date = customerService.getStreamingMoviesByDate(date);
-                    if (streaming_movies_by_date.length == 0)
+                    HashMap<Movie, LocalDateTime> streaming_movies_by_date = customerService.getStreamingMoviesByDate(date);
+                    if (streaming_movies_by_date.size() == 0)
                         System.out.println("No movies found in that date!");
                     else
-                        for (Movie m : streaming_movies_by_date)
-                            System.out.println("---- " + m.getTitle() + " ----");
+                        for (Movie m : streaming_movies_by_date.keySet())
+                            System.out.println("---- " + m.getTitle() + " (" + streaming_movies_by_date.get(m) + ") ----");
+                    audit.write("Listed all streaming movies by date " + date);
                 }
                 case 13 -> {
                     System.out.println("Write actor's name: ");
                     String actor_first_name1 = scanner.next();
                     String actor_last_name1 = scanner.next();
-                    System.out.println(customerService.getDetailsAboutActor(actor_first_name1 + " " + actor_last_name1));
+                    Actor a = customerService.getDetailsAboutActor(actor_first_name1 + " " + actor_last_name1);
+                    if(a == null)
+                        System.out.println("No actor found with this name!");
+                    else
+                        System.out.println(a);
+                    audit.write("Listed details about actor " + actor_first_name1 + " " + actor_last_name1);
                 }
                 case 14 -> {
                     Movie[] all_movies = customerService.getAllMovies();
@@ -325,6 +341,7 @@ public class Service {
                     }
                     Movie movie = all_movies[choice_movie - 1];
                     System.out.println(customerService.getDetailsAboutMovie(movie.getTitle()));
+                    audit.write("Listed details about movie " + movie.getTitle());
                 }
                 case 15 -> {
                     Cinema[] all_cinemas5 = customerService.getAllCinemas();
@@ -343,8 +360,8 @@ public class Service {
                         scanner.nextLine();
                         break;
                     }
-                    Movie[] all_movies6 = customerService.getStreamingMoviesFromCinema(all_cinemas5[choice_cinema5 - 1]);
-                    if (all_movies6.length == 0) {
+                    HashMap<Movie, LocalDateTime> all_movies6 = customerService.getStreamingMoviesFromCinema(all_cinemas5[choice_cinema5 - 1]);
+                    if (all_movies6.size() == 0) {
                         System.out.println("This cinema isn't streaming any movie at the moment! Please come again later");
                         break;
                     }
@@ -354,9 +371,8 @@ public class Service {
                     }
                     Cinema c5 = all_cinemas5[choice_cinema5 - 1];
                     System.out.println("Choose movie: ");
-                    Movie[] all_movies5 = customerService.getStreamingMoviesFromCinema(c5);
+                    Movie[] all_movies5 = customerService.getStreamingMoviesFromCinema(c5).keySet().toArray(new Movie[0]);
                     int i6 = 1;
-                    // show al streaming movies and their dates
                     for (Movie m5 : all_movies5) {
                         System.out.println(i6 + ". " + m5.getTitle() + " (" + c5.getStreaming_dates().get(m5) + ")");
                         i6++;
@@ -375,8 +391,15 @@ public class Service {
                     }
                     Movie m5 = all_movies5[choice_movie5 - 1];
                     customerService.buyTicket(c5, m5);
+                    audit.write("Bought ticket for movie " + m5.getTitle() + " from cinema " + c5.getName());
                 }
                 case 16 -> {
+                    try {
+                        audit.fileWriter.close();
+                    }
+                    catch (IOException e) {
+                        e.printStackTrace();
+                    }
                     System.exit(0);
                 }
                 default -> System.out.println("Invalid choice!");
@@ -397,16 +420,19 @@ public class Service {
                     Cinema[] cinemas = cinemaService.getCinemas();
                     for (Cinema c : cinemas)
                         System.out.println("---- " + c.getName() + " ----");
+                    audit.write("Listed all cinemas");
                 }
                 case 2 -> {
                     Movie[] movies = cinemaService.getMovies();
                     for (Movie m : movies)
                         System.out.println("---- " + m.getTitle() + " ----");
+                    audit.write("Listed all movies");
                 }
                 case 3-> {
                     Actor[] actors = cinemaService.getActors();
                     for (Actor a : actors)
                         System.out.println("---- " + a.getName() + " ----");
+                    audit.write("Listed all actors");
                 }
                 case 4 -> {
                     System.out.println("Write cinema's name: ");
@@ -435,6 +461,7 @@ public class Service {
                     }
                     Cinema c = new Cinema(name, movies1, rooms, seats);
                     cinemaService.addCinema(c);
+                    audit.write("Added cinema " + c.getName());
                 }
                 case 5 -> {
                     Cinema[] all_cinemas = cinemaService.getCinemas();
@@ -458,16 +485,17 @@ public class Service {
                     }
                     Cinema c1 = all_cinemas[choice_cinema - 1];
                     cinemaService.removeCinema(c1);
+                    audit.write("Removed cinema " + c1.getName());
                 }
                 case 6 ->{
                     System.out.println("Write the movie's type (action, comedy, romance, thriller, other): ");
                     scanner.nextLine();
-                    String type = null;
+                    String type;
                     do {
                         type = scanner.nextLine();
-                        if (!type.toLowerCase().equals("action") && !type.toLowerCase().equals("comedy") && !type.toLowerCase().equals("romance") && !type.toLowerCase().equals("other") && !type.toLowerCase().equals("thriller"))
+                        if (!type.equalsIgnoreCase("action") && !type.equalsIgnoreCase("comedy") && !type.equalsIgnoreCase("romance") && !type.equalsIgnoreCase("other") && !type.equalsIgnoreCase("thriller"))
                             System.out.println("Invalid type! Please try again");
-                    }while (!type.toLowerCase().equals("action") && !type.toLowerCase().equals("comedy") && !type.toLowerCase().equals("romance") && !type.toLowerCase().equals("other") && !type.toLowerCase().equals("thriller"));
+                    }while (!type.equalsIgnoreCase("action") && !type.equalsIgnoreCase("comedy") && !type.equalsIgnoreCase("romance") && !type.equalsIgnoreCase("other") && !type.equalsIgnoreCase("thriller"));
 
                     System.out.println("Write movie's name: ");
                     String movie_title = scanner.nextLine();
@@ -497,7 +525,7 @@ public class Service {
                     Movie m;
                     switch (type) {
                         case "action" -> {
-                            int pegi_rating = -1;
+                            int pegi_rating;
                             System.out.println("Write the movie's PEGI rating: ");
                             do {
                                 try {
@@ -507,7 +535,6 @@ public class Service {
                                 }
                                 catch (IllegalArgumentException e) {
                                     System.out.println(e.getMessage());
-                                    continue;
                                 }
                             } while (true);
                         }
@@ -518,20 +545,20 @@ public class Service {
                             String answer;
                             do {
                                 answer = scanner.nextLine();
-                                if (answer.toLowerCase().equals("y"))
+                                if (answer.equalsIgnoreCase("y"))
                                     adults_only = true;
-                                else if (!answer.toLowerCase().equals("n")) {
+                                else if (!answer.equalsIgnoreCase("n")) {
                                     System.out.println("Invalid answer! Please try again");
                                 }
-                            }while (!answer.toLowerCase().equals("y") && !answer.toLowerCase().equals("n"));
+                            }while (!answer.equalsIgnoreCase("y") && !answer.equalsIgnoreCase("n"));
                             System.out.println("Is the movie a romantic comedy? (y/n): ");
                             do {
                                 answer = scanner.nextLine();
-                                if (answer.toLowerCase().equals("y"))
+                                if (answer.equalsIgnoreCase("y"))
                                     romance = true;
-                                else if (!answer.toLowerCase().equals("n"))
+                                else if (!answer.equalsIgnoreCase("n"))
                                     System.out.println("Invalid answer! Please try again");
-                                }while (!answer.toLowerCase().equals("y") && !answer.toLowerCase().equals("n"));
+                                }while (!answer.equalsIgnoreCase("y") && !answer.equalsIgnoreCase("n"));
                                 m = new Comedy_Movie(movie_title, director_name, year, duration, actors1, rating, oscar_awards, adults_only, romance);
                             }
                         case "romance" -> {
@@ -540,11 +567,11 @@ public class Service {
                             String answer;
                             do {
                                 answer = scanner.nextLine();
-                                if (answer.toLowerCase().equals("y"))
+                                if (answer.equalsIgnoreCase("y"))
                                     explicit_nudity = true;
-                                else if (!answer.toLowerCase().equals("n"))
+                                else if (!answer.equalsIgnoreCase("n"))
                                     System.out.println("Invalid answer! Please try again");
-                            } while (!answer.toLowerCase().equals("y") && !answer.toLowerCase().equals("n"));
+                            } while (!answer.equalsIgnoreCase("y") && !answer.equalsIgnoreCase("n"));
                             m = new Romance_Movie(movie_title, director_name, year, duration, actors1, rating, oscar_awards, explicit_nudity);
                         }
                         case "thriller" -> {
@@ -562,7 +589,6 @@ public class Service {
                                 }
                                 catch (IllegalArgumentException e) {
                                     System.out.println(e.getMessage());
-                                    continue;
                                 }
                             } while (true);
                         }
@@ -580,12 +606,12 @@ public class Service {
                                 }
                                 catch (IllegalArgumentException e) {
                                     System.out.println(e.getMessage());
-                                    continue;
                                 }
                             } while (true);
                         }
                     }
                     cinemaService.addMovie(m);
+                    audit.write("Added movie " + m.getTitle());
                 }
 
                 case 7 -> {
@@ -610,6 +636,7 @@ public class Service {
                     }
                     Movie m = movies[choice_movie - 1];
                     cinemaService.removeMovie(m);
+                    audit.write("Removed movie " + m.getTitle());
                 }
 
                 case 8 -> {
@@ -634,6 +661,7 @@ public class Service {
                     int actor_oscar_awards = scanner.nextInt();
                     Actor a = new Actor(actor_first_name, actor_last_name, actor_age, gender, actor_oscar_awards);
                     cinemaService.addActor(a);
+                    audit.write("Added actor " + a.getName());
                 }
 
                 case 9 ->{
@@ -658,6 +686,7 @@ public class Service {
                     }
                     Actor a = actors[choice_actor - 1];
                     cinemaService.removeActor(a);
+                    audit.write("Removed actor " + a.getName());
                 }
 
                 case 10 -> {
@@ -698,8 +727,10 @@ public class Service {
                         choice_movie = scanner.nextInt();
                     }
                     Movie movie = movies[choice_movie - 1];
-                    if (movie != null)
-                            cinemaService.addMovieToCinema(c2, movie);
+                    if (movie != null){
+                        cinemaService.addMovieToCinema(c2, movie);
+                        audit.write("Added movie " + movie.getTitle() + " to cinema " + c2.getName());
+                    }
                 }
                 case 11 -> {
                     Cinema[] all_cinemas2 = cinemaService.getCinemas();
@@ -749,6 +780,7 @@ public class Service {
                     }
                     Movie m = listed_movies[choice_movie - 1];
                     cinemaService.removeMovieFromCinema(c3, m);
+                    audit.write("Removed movie " + m.getTitle() + " from cinema " + c3.getName());
                 }
                 case 12 -> {
                     Cinema[] all_cinemas3 = cinemaService.getCinemas();
@@ -834,6 +866,7 @@ public class Service {
                     {
                         try{
                             cinemaService.streamMovie(c4, m2, date, room, price);
+                            audit.write("Streamed movie " + m2.getTitle() + " in cinema " + c4.getName());
                         }
                         catch(IllegalArgumentException e){
                             System.out.println(e.getMessage());
@@ -891,6 +924,7 @@ public class Service {
                     LocalDateTime date_to_stop = c5.getStreaming_dates().get(m3);
                     try {
                         cinemaService.stopStreaming(c5, m3, date_to_stop);
+                        audit.write("Stopped streaming movie " + m3.getTitle() + " in cinema " + c5.getName());
                     }
                     catch(IllegalArgumentException e){
                         System.out.println(e.getMessage());
@@ -948,6 +982,7 @@ public class Service {
                     int new_price = scanner.nextInt();
                     try{
                         cinemaService.changePrice(c6, m4, new_price);
+                        audit.write("Changed price of movie " + m4.getTitle() + " in cinema " + c6.getName());
                     }
                     catch(IllegalArgumentException e) {
                         System.out.println(e.getMessage());
@@ -1014,6 +1049,7 @@ public class Service {
                     else{
                         try{
                             cinemaService.changeRoom(c7, m5, new_room);
+                            audit.write("Changed room of movie " + m5.getTitle() + " in cinema " + c7.getName());
                         }
                         catch(IllegalArgumentException e){
                             System.out.println(e.getMessage());
@@ -1095,6 +1131,7 @@ public class Service {
                     else{
                         try{
                             cinemaService.changeDate(c8, m6, date);
+                            audit.write("Changed date of movie " + m6.getTitle() + " in cinema " + c8.getName());
                         }
                         catch(IllegalArgumentException e){
                             System.out.println(e.getMessage());
@@ -1103,6 +1140,12 @@ public class Service {
                     }
                 }
                 case 17 -> {
+                    try {
+                        audit.fileWriter.close();
+                    }
+                    catch (IOException e){
+                        e.printStackTrace();
+                    }
                     System.exit(0);
                 }
                 default -> System.out.println("Invalid choice!");
@@ -1123,7 +1166,7 @@ public class Service {
             System.out.println("9. List all streaming movies from a genre from a cinema");
             System.out.println("10. List all movies from an actor");
             System.out.println("11. List all streaming movies from an actor");
-            System.out.println("12. List all movies from a date");
+            System.out.println("12. List all streaming movies from a date");
             System.out.println("13. List details about an actor");
             System.out.println("14. List details about a movie");
             System.out.println("15. Buy a ticket");
